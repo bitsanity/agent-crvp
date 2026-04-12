@@ -1,3 +1,4 @@
+![agent-crvp](./agent-crvp.png)
 # agent-crvp
 
 ## Crustacean Rendezvous Protocol for AI Agents
