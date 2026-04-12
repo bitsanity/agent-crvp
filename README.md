@@ -19,7 +19,7 @@ This protocol is built with:
 
 * [ADILOS](https://github.com/bitsanity/ADILOS) for identification/key-exchange. `npm i adilosjs`
 * [ecjsonrpc](https://github.com/bitsanity/ecjsonrpc) for Elliptic Curve encryption of JSON-RPC messages. `npm i ecjsonrpc`
-* [stealthpayeth](https://github.com/bitsanity/stealthpayeth) js library for doing Stealth Payments over Ethereum
+* [stealthpayeth](https://github.com/bitsanity/stealthpayeth) js library for doing Stealth Payments over Ethereum. `npm i stealthpayeth`
 
 ## Setup
 
