@@ -1,0 +1,17 @@
+#!node
+
+const session = require( './sessions.js' )
+
+try {
+  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+
+  let sess = session.newSession()
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( sess.chB64 )
+}
+catch( ex ) {
+  console.log( "Status: 500 Internal Server Error" )
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( ex.toString() )
+}
+

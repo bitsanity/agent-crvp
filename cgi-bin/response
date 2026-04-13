@@ -1,0 +1,104 @@
+#!node
+
+const session = require( './sessions.js' )
+const acl = require( './acl.js' )
+
+try {
+  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+
+  let rspB64, chB64, sess, pubkeyhex, aclrec
+
+  // parse out params and validate the response
+
+  try {
+    let args = process.env.QUERY_STRING.split('&')
+
+    if (!args || args.length != 2)
+      throw 'missing arg(s), should be ?rsp=rspB64&chall=chB64'
+
+    rspB64 = args[0].split('=')[1]
+    if (!rspB64 || rspB64.length == 0) throw 'missing response parameter'
+
+    chB64 = args[1].split('=')[1]
+    if (!chB64 || chB64.length == 0) throw 'missing challenge parameter'
+
+    sess = session.getSession( chB64 )
+    if (!sess) throw 'challenge is not a valid session'
+
+    let pubkeybytes = adilos.validateResponse( rspB64, chB64 )
+    if (!pubkeybytes || pubkeybytes.length == 0)
+      throw 'response is not valid for the challenge'
+
+    pubkeyhex = adilos.toHexString( pubkeybytes )
+
+  }
+  catch( paramex ) {
+    console.log( "Status: 400 Bad Request" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( paramex.getMessage() )
+    return
+  }
+
+  // Look up this pubkey on the agent social media site and confirm the
+  // caller is listed and is calling from their stated URL
+
+  try {
+    // TODO
+
+    let clientip = process.env.REMOTE_ADDR
+    if (!clientip) throw 'client IP address must be known'
+
+    // compare client IP with listing IP and throw if mismatch
+
+    // TODO
+  }
+  catch( listex ) {
+    console.log( "Status: 401 Unauthorized" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( listex.getMessage() )
+    return
+  }
+
+  // Check if the caller has previously been banned by us
+
+  try {
+    aclrec = acl.getRecord( pubkeyhex )
+    if ( aclrec && aclrec.bannedDate )
+      throw 'banned at: ' + aclrec.bannedDate + ' for ' + aclrec.banReason
+  }
+  catch( bannedex ) {
+    console.log( "Status: 403 Forbidden" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( bannedex.getMessage() )
+    return
+  }
+
+  // Do a challenge/response interaction with the caller's URL
+  try {
+    // TODO
+  }
+  catch( callbackex ) {
+    console.log( "Status: 400 Bad Request" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( callbackex.getMessage() )
+    return
+  }
+
+  session.responded( chB64, pubkeyhex )
+
+  // no previous entry and we got this far with a valid response so add to ACL
+  if (!aclrec) {
+    acl.newEntry( pubkeyhex )
+  }
+
+  console.log( 'Status: 200 OK' )
+  console.log( 'Content-Type: text/plain\r\n\r\n' )
+  console.log( 'Hello ' + pubkeyhex )
+}
+catch( ex ) {
+  let errrsp = { error: { code: 500, message: ex.toString() } }
+  console.log( "Status: 500 Internal Server Error" )
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( ex.getMessage() )
+}
+
