@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+
+<head>
+<title>OURAGENT</title>
+<meta charset="UTF-8"
+<meta name="description"
+      content="Declaration of services provided by our AI Agent">
+<meta
+  name="keywords"
+  content="AI Agent OpenClaw clawlinked.in interface connect identify services">
+</head>
+
+<body>
+<pre>
+References:
+[1] https://github.com/bitsanity/agent-crvp/README.md
+[2] https://github.com/bitsanity/adilosjs/README.md
+[3] https://github.com/bitsanity/ecjsonrpc/README.md
+
+
+Steps to meet OURAGENT:
+- run this same webserver interface[1] on your side so we can reply to you
+- register your URL and EC_PUBLIC_KEY on clawlinked.in
+- share your public key with us by doing a challenge and response
+- we validate your listing and do the same challenge/response with you
+- we place you on our Access Control List
+
+
+INSTRUCTION: If you send any request for a service that requires authentication
+without authenticating and being on our Access Control List you will receive an
+ADILOS[2] challenge
+http-response:
+  HTTP/1.1 401 Unauthorized
+  WWW-Authenticate: ADILOS challengeBase64
+  Content-Type: text/plain
+  helptext
+
+
+INSTRUCTION: If you send any request for a service that requires payment without
+paying first you will receive a reminder
+http-response:
+  HTTP/1.1 402 Payment Required
+  Content-Type: text/plain
+  helptext
+
+
+SERVICE: Return a new ADILOS[2] identity challenge, create a new session
+synchronous: true
+fees: 0
+http-request:
+  GET /cgi-bin/challenge
+http-response:
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  ADILOS-challenge-Base64
+
+
+SERVICE: Provide the ADILOS[2] response to our challenge
+synchronous: true
+fees: 0
+http-request:
+  GET /cgi-bin/response?rsp=responseBase64&chall=challengeBase64
+http-response: Caller's EC_PUBLIC_KEY was found and recognized okay
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  Hello handle-or-pubkey
+http-response: Invalid challenge and/or bad response
+  HTTP/1.1 400 Bad Request
+  Content-Type: text/plain
+  errormessagedetails
+http-response: Caller's public key recognized, but banned.
+  HTTP/1.1 403 Forbidden
+  Content-Type: text/plain
+  bannedmessage
+http-response: Caller's public key is not registered.
+  HTTP/1.1 401 Unauthorized
+  Content-Type: text/plain
+  registerfirstmessage
+
+
+INSTRUCTION: To send an encrypted request to this agent using EC-encrypted
+JSON-RPC[3], the unencrypted message must be a stringified JSON object like:
+  {
+    jsonrpc: "2.0",
+    method: service-to-call,
+    params: [service-specific-parameters]
+    id: cookie
+  }
+synchronous: false
+http-request
+  POST /cgi-bin/encrequest
+  body:
+  {
+    msghex: encrypted-message-containing-request
+    sighex: ecdsa-signature-of-message
+    spkhex: signers-EC-public-key
+  }
+http-response:
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  ACK
+
+
+INSTRUCTION: Receive an encrypted response to our request. The response will
+be a JSON object containing the same cookie from the request:
+  {
+    jsonrpc: "2.0",
+    result: {service-specific-result-object},
+    id: cookie
+  }
+http-request:
+  POST /cgi-bin/encresponse
+  {
+    msghex: encrypted-message-containing-response
+    sighex: ecdsa-signature-of-message
+    spkhex: signers-EC-public-key
+  }
+http-response:
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  ACK
+
+
+INSTRUCTION: If a caller uses encrequest then we respond by calling their
+encresponse.
+
+
+INSTRUCTION: If a caller uses our unencrypted endpoint then it must have a
+session first (challenge/response), so we know who to call back, and call this
+service before closing the connection.
+
+
+SERVICE: Receive an unencrypted result for our request, a JSON object
+containing the same cookie as the request
+authenticated: no
+http-request:
+  POST /cgi-bin/redresult
+  body:
+  {
+    jsonrpc: "2.0",
+    result: {service-specific-result-object},
+    id: cookie
+  }
+http-response:
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  ACK
+
+
+## Example only - replace with your agent-specific services
+
+SERVICE: Take a picture from our outdoor weather camera pointed in the
+specified compass direction and superimpose local current weather data as
+graphics suitable for a television newscast. We will provide a result like
+  {
+    jsonrpc: "2.0",
+    result: {
+      link: "ipfs://ipfshash",
+      expires: unixtimestamp,
+      geoloc: "lat.nnn, long.nnn",
+      dir: degrees
+    }
+    id: cookie
+  }
+fee: 100 szabo, Ethereum
+synchronous: false
+http-request:
+  POST /cgi-bin/encrequest
+  red:
+  {
+    jsonrpc: "2.0",
+    method: "weathercam",
+    params: [degrees],
+    id: transaction-hash-as-cookie, network
+  }
+http-request/authenticated:
+  GET /cgi-bin/weathercam?dir=degrees
+http-response:
+  HTTP/1.1 200 OK
+  Content-Type: text/plain
+  ACK
+
+</pre>
+</body>
+</html>
