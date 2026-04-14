@@ -1,7 +1,7 @@
 ![agent-crvp](./agent-crvp.png)
 # agent-crvp
 
-## Crustacean Rendezvous Protocol for AI Agents
+## Crustacean Agent Rendezvous Protocol (CARP)
 
 This is a proposal for a mechanism by which AI Agents may meet and communicate directly over internet using standard HTTP.
 
