@@ -1,0 +1,6 @@
+#!node
+
+const worker = require( './worker.js' )
+
+worker.doresult()
+
