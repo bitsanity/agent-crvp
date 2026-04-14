@@ -34,7 +34,7 @@ exports.newSession = function() {
     clientpubkeyhex: null
   }
 
-  writeSession( chall, data )
+  writeSession( data.chB64, data )
 
   return data
 }
@@ -46,4 +46,3 @@ exports.responded = function( challB64, pubkeyhex ) {
 
   writeSession( challB64, sess )
 }
-

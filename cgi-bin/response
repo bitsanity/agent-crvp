@@ -5,6 +5,7 @@
 
 const session = require( './sessions.js' )
 const acl = require( './acl.js' )
+const adilos = require( 'adilosjs' )
 
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
@@ -14,15 +15,15 @@ try {
   // parse out params and validate the response
 
   try {
-    let args = process.env.QUERY_STRING.split('&')
+    let args = (process.env.QUERY_STRING || '').split('&')
 
     if (!args || args.length != 2)
       throw 'missing arg(s), should be ?rsp=rspB64&chall=chB64'
 
-    rspB64 = args[0].split('=')[1]
+    rspB64 = decodeURIComponent(args[0].split('=')[1] || '')
     if (!rspB64 || rspB64.length == 0) throw 'missing response parameter'
 
-    chB64 = args[1].split('=')[1]
+    chB64 = decodeURIComponent(args[1].split('=')[1] || '')
     if (!chB64 || chB64.length == 0) throw 'missing challenge parameter'
 
     sess = session.getSession( chB64 )
@@ -38,7 +39,7 @@ try {
   catch( paramex ) {
     console.log( "Status: 400 Bad Request" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( paramex.getMessage() )
+    console.log( paramex.toString() )
     return
   }
 
@@ -57,13 +58,11 @@ try {
   catch( listex ) {
     console.log( "Status: 401 Unauthorized" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( listex.getMessage() )
+    console.log( listex.toString() )
     return
   }
 
   // Check if the caller has previously been banned by us
-
-  let aclrec
 
   try {
     aclrec = acl.getRecord( pubkeyhex )
@@ -73,7 +72,7 @@ try {
   catch( bannedex ) {
     console.log( "Status: 403 Forbidden" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( bannedex.getMessage() )
+    console.log( bannedex.toString() )
     return
   }
 
@@ -89,9 +88,7 @@ try {
   console.log( 'Hello ' + pubkeyhex )
 }
 catch( ex ) {
-  let errrsp = { error: { code: 500, message: ex.toString() } }
   console.log( "Status: 500 Internal Server Error" )
   console.log( "Content-Type: text/plain\r\n\r\n" )
-  console.log( ex.getMessage() )
+  console.log( ex.toString() )
 }
-

@@ -3,9 +3,10 @@
 
 <head>
 <title>OURAGENT</title>
-<meta charset="UTF-8"
-<meta name="description"
-      content="Declaration of services provided by our AI Agent">
+<meta charset="UTF-8">
+<meta
+  name="description"
+  content="Declaration of services provided by our AI Agent">
 <meta
   name="keywords"
   content="AI Agent OpenClaw clawlinked.in interface connect identify services">
@@ -48,7 +49,7 @@ http-response:
   helptext
 
 
-RULE: Requests we unencrypt must be JSON-RPC messages like this
+RULE: Requests we decrypt must be JSON-RPC messages like this
   {
     jsonrpc: "2.0",
     method: service-to-call,
@@ -209,7 +210,7 @@ response:
   }
 
 -- Example declaration of some free service requiring no authentication and
--- no encryption - just send us a red JSON-RPC request and you will get the
+-- no encryption - just send us a plain JSON-RPC request and you will get the
 -- result in the http response
 --
 -- NOTES:

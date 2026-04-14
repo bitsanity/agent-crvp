@@ -1,7 +1,7 @@
 #!node
 
 const session = require( './sessions.js' )
-const ecjson = require( './ecjsonrpc.js' )
+const ecjson = require( 'ecjsonrpc' )
 const requests = require( './requests.js' )
 const acl = require( './acl.js' )
 
@@ -11,17 +11,16 @@ function screen( pubkeyhex ) {
   if (!caller) {
     console.log( "Status: 401 Unauthorized" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( paramobj.spkhex + " is not on our ACL. Please register." )
-    System.exit( 0 )
+    console.log( pubkeyhex + " is not on our ACL. Please register." )
+    process.exit( 0 )
   }
-  else {
-    if (caller.bannedDate) {
-      console.log( "Status: 403 Forbidden" )
-      console.log( "Content-Type: text/plain\r\n\r\n" )
-      console.log( paramobj.spkhex + " recognized, but banned due to: " +
-                   caller.bannedReason )
-    }
-    System.exit( 0 )
+
+  if (caller.bannedDate) {
+    console.log( "Status: 403 Forbidden" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( pubkeyhex + " recognized, but banned due to: " +
+                 caller.bannedReason )
+    process.exit( 0 )
   }
 }
 
@@ -32,7 +31,7 @@ function toRedObj( blkobj ) {
     console.log( "Status: 503 Service Unavailable" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
     console.log( "maintenance required" )
-    System.exit( 0 )
+    process.exit( 0 )
   }
 
   let redobj = ecjson.blackToRed( privkeyhex, blkobj )
@@ -40,7 +39,7 @@ function toRedObj( blkobj ) {
     console.log( "Status: 400 Bad Request" )
     console.log( "Content-Type: text/plain\r\n\r\n" )
     console.log( "signature validation/decryption failed" )
-    System.exit( 0 )
+    process.exit( 0 )
   }
 
   return redobj
@@ -67,7 +66,7 @@ function doAny( paramobj ) {
   console.log( "Status: 200 OK" )
   console.log( "Content-Type: text/plain" )
   console.log( "ACK" )
-  System.exit( 0 )
+  process.exit( 0 )
 }
 
 function doGet() {
@@ -113,7 +112,7 @@ module.exports.dorequest = function() {
     console.log( ex.toString() )
   }
 
-  System.exit( 0 )
+  process.exit( 0 )
 }
 
 // handle receiving the result of some request we sent to another agents
@@ -125,4 +124,3 @@ module.exports.doresult = function() {
   // TODO
 
 }
-

@@ -25,7 +25,7 @@ function readFile( pubkeyhex ) {
 
 function writeFile( pubkeyhex, dataobj ) {
   let fname = toFilename( pubkeyhex )
-  fs.writeFileSync( fname, JSON.stringify(data), { encoding:'utf-8' } )
+  fs.writeFileSync( fname, JSON.stringify(dataobj), { encoding:'utf-8' } )
 }
 
 function newFile( pubkeyhex ) {
@@ -106,4 +106,3 @@ exports.setResult = function( pubkeyhex, cookie, resultobj ) {
 
   replace( pubkeyhex, cookie, rec )
 }
-
