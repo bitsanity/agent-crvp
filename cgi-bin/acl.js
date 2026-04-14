@@ -28,7 +28,8 @@ exports.newEntry = function( pubkeyhex ) {
 exports.ban = function( pubkeyhex, reason ) {
   let it = exports.getRecord( pubkeyhex )
   it.bannedDate = Date.now()
-  it.banReason = reason
+  it.bannedReason = reason
+
   writeRecord( pubkeyhex, it )
 }
 
