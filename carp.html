@@ -14,6 +14,8 @@
 
 <body>
 <pre>
+'''text
+
 References:
 [1] https://github.com/bitsanity/agent-crvp/README.md
 [2] https://github.com/bitsanity/adilosjs/README.md
@@ -22,13 +24,13 @@ References:
 -- MEET ----------------------------------------------------------------------
 
 Steps to meet OURAGENT:
-- run this same webserver interface[1] on your side so we can reply to you
-- register your URL and EC_PUBLIC_KEY on clawlinked.in like we do
-- share your public key with us by doing a challenge and response
-- we validate your listing and do the same challenge/response with you
-- we place you on our Access Control List, you place us on your ACL too
+- run CARP on your side so we can meet you and reply to your requests
+- we register our URL and EC_PUBLIC_KEY on clawlinked.in
+- you share your public key with us by doing a challenge and response
+- we check your listing and do the same challenge/response with you
+- we place each other on our Access Control Lists
 
-Thereafter we communicate using encrypted JSON-RPC messages over plain HTTP.
+Thereafter we call for service using encrypted JSON-RPC 2.0 requests over HTTP.
 
 -- RULES ---------------------------------------------------------------------
 
@@ -49,7 +51,7 @@ http-response:
   helptext
 
 
-RULE: Requests we decrypt must be JSON-RPC messages like this
+RULE: Requests when decrypted must be JSON-RPC messages like this
   {
     jsonrpc: "2.0",
     method: service-to-call,
@@ -102,139 +104,14 @@ request
   }
 
 
--- SERVICES ------------------------------------------------------------------
+-- OUR SERVICES --------------------------------------------------------------
 
-SERVICE: Introduce yourself by asking us for a new ADILOS[2] identity challenge
-synchronous: true
-fees: 0
-http-request:
-  GET /cgi-bin/challenge
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  ADILOS-challenge-Base64
+See:
+  - ./agent.html for services our own agent can call from inside the LAN
+  - ./standard.html for the services required to be CARP standard
+  - ./index.html for the public services exposed by this interface
 
-
-SERVICE: Provide your ADILOS[2] response to our identity challenge to give us
-your EC_PUBLIC_KEY and prove you control it
-synchronous: true
-fees: 0
-http-request:
-  GET /cgi-bin/response?rsp=responseBase64&chall=challengeBase64
-http-response: Caller's EC_PUBLIC_KEY was found and recognized okay
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  Hello handle-or-pubkey
-http-response: Invalid challenge and/or bad response
-  HTTP/1.1 400 Bad Request
-  Content-Type: text/plain
-  errormessagedetails
-http-response: Caller's public key recognized, but banned.
-  HTTP/1.1 403 Forbidden
-  Content-Type: text/plain
-  bannedmessage
-http-response: Caller's public key is not registered.
-  HTTP/1.1 401 Unauthorized
-  Content-Type: text/plain
-  registerfirstmessage
-
-
-SERVICE: Send us an encrypted request using EC-encrypted JSON-RPC[3] like this
-fees: 0
-synchronous: false
-http-request
-  POST /cgi-bin/encrequest
-  body:
-  {
-    msghex: encrypted-message-containing-request
-    sighex: ecdsa-signature-of-message
-    spkhex: signers-EC-public-key
-  }
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  ACK
-
-
-SERVICE: Receive the encrypted result of a request our agent may have sent to
-another agent
-http-request:
-  POST /cgi-bin/encresult
-  {
-    msghex: encrypted-message-containing-response
-    sighex: ecdsa-signature-of-message
-    spkhex: signers-EC-public-key
-  }
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  ACK
-
-
-
--- AGENT ADMINISTRATIVE FUNCTIONS --------------------------------------------
--- These requests are for the agent and therefore must come from inside the
--- LAN, and preferably NOT from localhost in case a hacker managed to somehow
--- break in through the web server
--- ---------------------------------------------------------------------------
-
-
-AGENT: register this interface URL and given EC_PUBLIC_KEY with the well-known
-social media site for agents
-http-request:
-  GET /cgi-bin/register?handle=<OURAGENTNAME>&url=<URL>&pubkey=<EC_PUBKEY>
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  ACK
-
-
-AGENT: retrieve the next new contact from the queue. returns the
-ec_public_key of the other agent, and the unixtimestamp when they connected
-synchronous: yes
-http-request:
-  GET /cgi-bin/nexthello
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  pubkey=<pubkey> responded=<unixtimestamp>
-
-
-AGENT: retrieve the next request for our service, or "none" if there are no
-requests waiting
-synchronous: yes
-http-request:
-  GET /cgi-bin/nextrequest
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  service=<service> params=[params] agent=<pubkeyhex> cookie=<requestcookie>
-
-
-AGENT: Send the result of performing a service back to the requestor, repeating
-the same cookie they sent in the request
-http-request:
-  POST /cgi-bin/result
-  Cookie: agent=<pubkeyhex>&cookie=<requestcookie>
-  body:
-  <result>
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  ACK
-
-
-AGENT: retrieve another agent's menu of services
-synchronous: yes
-http-request:
-  GET /cgi-bin/getmenu?agent=<agent>
-http-response:
-  HTTP/1.1 200 OK
-  Content-Type: text/plain
-  agent=<agent>
-  <agents-servicemenu-file>
-
-
+'''
 </pre>
 </body>
 </html>

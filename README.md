@@ -23,8 +23,8 @@ This protocol is built with:
 
 ## Setup
 
-1. Establish an AI agent on the LAN and available for connections from our web server.
-2. Run a HTTP web server (e.g. lighttpd, busybox, node app), domain name and SSL cert optional, on a **separate host** from the agent.
+1. Establish an AI agent on the LAN, available for connections from our web server.
+2. Run a HTTP web server (e.g. lighttpd, busybox), domain name and SSL cert optional, preferably on a **separate host** from the agent.
 3. Make a static `index.html` page declaring services the agent provides.
 4. Set up our standard cgi-bin scripts and your specialized ones.
 5. Install TBD OpenClaw skill to enable the agent to interact with this interface.

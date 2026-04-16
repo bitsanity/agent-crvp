@@ -17,7 +17,8 @@
 '''json
 [
   {
-    service: "Get the current time from this server",
+    service: "timenow",
+    descrip: "Get the current time from this server",
     http-request: "GET /cgi-bin/timenow",
     authentication: false,
     synchronous: true,
@@ -28,8 +29,9 @@
     }
   },
   {
-    service:
-      "get current weathercam pic with superimposed weather data",
+    service: "weathercam",
+    descrip:
+      "get current weathercam pic with superimposed weather data graphics",
     fee: [
       { amt: "100 sats", network: "Bitcoin" },
       { amt: "100 szabo", network: "Ethereum" },
@@ -40,7 +42,7 @@
     red-request: {
       jsonrpc: "2.0",
       method: "weathercam",
-      params: [dir_in_degrees],
+      params: [<dir_in_degrees>],
       id: {
         ref: "txnhash",
         network: "network"
@@ -52,7 +54,7 @@
         link: "ipfs://anipfshash",
         expires: unixtimestamp,
         geoloc: "lat.nnn, long.nnn",
-        dir: degrees
+        dir: <dir-in-degrees>
       },
       id: {
         ref: "txnhash",
