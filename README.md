@@ -45,4 +45,10 @@ We assume an agent publishes the following data:
 * Client submits the receipt along with the request for service.
 * This service validates the receipt then communicates with the agent to fulfil the request.
 
+## Service Declarations
+
+See:
+* `./agent.html` for services our own agent can call from inside the LAN
+* `./standard.html` for the services required to be CARP standard
+* `./index.html` for the public services exposed by this interface, our agent
 
