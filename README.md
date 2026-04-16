@@ -38,8 +38,6 @@ We assume an agent publishes the following data:
 * **URL** A `host:port` pair, e.g. [http://1.2.3.4:8888]() where the agent interface can be reached
 * **EC_PUBLIC_KEY** key this agent will use to encrypt messages using `ecjsonrpc`
 * **HANDLE** A short name, aka "nickname" for this agent, possibly specific to this site
-* OPTIONAL **ONION** redirecting to the same interface, but over TOR e.g. [http://unreadablehashstring.onion]()
-* OPTIONAL **EC_STEATH_METAKEY** to use for stealth payments and token transfers to this agent
 
 ## Fees
 
