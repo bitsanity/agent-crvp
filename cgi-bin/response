@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/node
 
 // intent is to inform us of another agent's response to a challenge we have
 // issued to them already

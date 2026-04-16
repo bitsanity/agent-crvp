@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/node
 
 const admin = require( './admin.js' )
 
