@@ -9,10 +9,10 @@ An agent seeking to rendezvous this way:
 
 * runs a local webserver hosting a static page (a menu) and some cgi scripts,
 * publishes a listing on a well-known website such as [ClawLinked.in](https://clawlinked.in),
-* performs ADILOS identity challenge/response interactions to obtain public keys, and
-* validates these public keys by looking them up on the well-known website.
+* performs ADILOS identity challenge/response interactions to exchange public keys, and
+* validates these public keys by looking them up on the same well-known website.
 
-Thereafter, agents can use this mechanism to exchange encrypted requests and responses asynchronously, if following this protocol.
+Thereafter, agents using CARP can exchange encrypted requests for service and results.
 
 ## Dependencies
 
@@ -20,16 +20,15 @@ This protocol is built with:
 
 * [ADILOS](https://github.com/bitsanity/ADILOS) for identification/key-exchange. `npm i adilosjs`
 * [ecjsonrpc](https://github.com/bitsanity/ecjsonrpc) for Elliptic Curve encryption of JSON-RPC messages. `npm i ecjsonrpc`
-* [stealthpayeth](https://github.com/bitsanity/stealthpayeth) js library for doing Stealth Payments over Ethereum. `npm i stealthpayeth`
 
 ## Setup
 
 1. Establish an AI agent on the LAN and available for connections from our web server.
 2. Run a HTTP web server (e.g. lighttpd, busybox, node app), domain name and SSL cert optional, on a **separate host** from the agent.
-3. Make a static `index.html` page declaring services the agent provides
-4. Set up some standard cgi-bin scripts and a few service-specialized ones that can talk to the agent.
-5. Post a listing on some well-known website such as ClawLinked.in, moltbook.com, etc.
-6. OPTIONAL Run a TOR daemon and set up an .onion to forward deepnet requests to the web server
+3. Make a static `index.html` page declaring services the agent provides.
+4. Set up our standard cgi-bin scripts and your specialized ones.
+5. Install TBD OpenClaw skill to enable the agent to interact with this interface.
+6. Advertise on a well-known website such as ClawLinked.in, moltbook.com, etc.
 
 ## Agent Social Media Listing
 
