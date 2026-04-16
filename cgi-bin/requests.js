@@ -4,13 +4,16 @@
 //   - file contains an array of objects, each object is a request-result
 
 const fs = require( 'node:fs' )
+const path = require( 'path' )
+
+const DIR = './requests'
 
 function isString(val) {
   return Object.prototype.toString.call(val) === '[object String]';
 }
 
 function toFilename( pubkeyhex ) {
-  return './requests/' + pubkeyhex
+  return DIR + "/" + pubkeyhex
 }
 
 // returns JSON array
@@ -88,6 +91,7 @@ exports.add = function( pubkeyhex, reqobj ) {
   }
 
   let data = {
+    clientpubkeyhex: pubkeyhex,
     created: Date.now(),
     redreq: reqobj,
     redres: null,
@@ -106,3 +110,30 @@ exports.setResult = function( pubkeyhex, cookie, resultobj ) {
 
   replace( pubkeyhex, cookie, rec )
 }
+
+exports.oldestPending = function() {
+
+  const files =
+    fs.readdirSync( DIR )
+    .map(name => ({
+      name,
+      time: fs.statSync(path.join(dir, name)).mtime.getTime()
+    }))
+    .sort((a, b) => a.time - b.time) // oldest first
+    .map(f => f.name);
+
+  if (!files || files.length == 0) return null
+
+  let result = null
+
+  for (const f of files) {
+    let contents = exports.get( f )
+    if (!contents.completed)
+      result = contents
+      break
+    }
+  }
+
+  return result
+}
+

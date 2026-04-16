@@ -1,0 +1,38 @@
+#!/usr/bin/node
+
+const admin = require( './admin.js' )
+
+async function getMenu( url ) {
+  try {
+    const response = await fetch( url )
+    if (!response.ok) return null
+
+    return await response.json()
+  }
+  catch( e ) {
+    return null
+  }
+}
+
+if (! admin.isWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if ( process.env.REQUEST_METHOD !== 'GET' ) {
+  admin.respondHttp( 405, "Please use GET" )
+}
+
+let parms = admin.parseGetParams( process.env.QUERY_STRING )
+
+if (!parms.agent)
+  admin.respondHttp( 400, "missing agent-pubkey param" )
+
+// TODO - look up other agent by pubkey
+let url = 'http://' + 'localhost:9000' + '/index.html'
+
+let contents = await getMenu( url )
+
+if (!contents || contents.length == 0)
+  admin.respondHttp( 404, err.toString() )
+
+admin.respondHttp( 200, contents )

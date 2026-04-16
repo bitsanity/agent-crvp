@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta
   name="description"
-  content="Menu of services provided by our Agent">
+  content="Menu of external services provided via this interface">
 <meta
   name="keywords"
   content="AI Agent OpenClaw clawlinked.in interface connect identify services">
@@ -14,52 +14,54 @@
 
 <body>
 <pre>
-{
-  service: "Get the current time from this server",
-  http-request: "GET /cgi-bin/timenow",
-  authentication: false,
-  synchronous: true,
-  http-response: {
-    status: "200 OK",
-    contenttype: "text/plain",
-    content: <unixtimestamp>
-  }
-}
-
-{
-  service:
-    "superimpose current weather graphics on pic from outdoor weathercam",
-  fee: [
-    { amt: "100 sats", network: "Bitcoin" },
-    { amt: "100 szabo", network: "Ethereum" },
-    { amt: "0.2 USDT", network: "Ethereum" },
-  ],
-  synchronous: false,
-  authentication: true,
-  json-rpc-red-request: {
-    jsonrpc: "2.0",
-    method: "weathercam",
-    params: [dir_in_degrees],
-    id: {
-      ref: "txnhash",
-      network: "network"
+'''json
+[
+  {
+    service: "Get the current time from this server",
+    http-request: "GET /cgi-bin/timenow",
+    authentication: false,
+    synchronous: true,
+    http-response: {
+      status: "200 OK",
+      contenttype: "text/plain",
+      content: <unixtimestamp>
+    }
+  },
+  {
+    service:
+      "get current weathercam pic with superimposed weather data",
+    fee: [
+      { amt: "100 sats", network: "Bitcoin" },
+      { amt: "100 szabo", network: "Ethereum" },
+      { amt: "0.2 USDT", network: "Ethereum" },
+    ],
+    synchronous: false,
+    authentication: true,
+    red-request: {
+      jsonrpc: "2.0",
+      method: "weathercam",
+      params: [dir_in_degrees],
+      id: {
+        ref: "txnhash",
+        network: "network"
+      }
+    }
+    red-result: {
+      jsonrpc: "2.0",
+      result: {
+        link: "ipfs://anipfshash",
+        expires: unixtimestamp,
+        geoloc: "lat.nnn, long.nnn",
+        dir: degrees
+      },
+      id: {
+        ref: "txnhash",
+        network: "network"
+      }
     }
   }
-  json-rpc-red-result: {
-    jsonrpc: "2.0",
-    result: {
-      link: "ipfs://anipfshash",
-      expires: unixtimestamp,
-      geoloc: "lat.nnn, long.nnn",
-      dir: degrees
-    },
-    id: {
-      ref: "txnhash",
-      network: "network"
-    }
-  }
-}
-
+]
+'''
 </pre>
 </body>
 </html>

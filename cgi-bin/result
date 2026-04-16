@@ -1,0 +1,65 @@
+#!/usr/bin/node
+
+// called locally by our agent when it has a result to send
+
+const ecjson = require( 'ecjsonrpc' )
+const admin = require( './admin.js' )
+
+function handlePost( topubkey, cookie, replyobj ) {
+
+  // TODO - look up URL for given pubkey from social media and ensure the
+  // request is coming from there
+
+  let privkeyhex = process.env.AGENT_PRIVKEYHEX
+  if (!privkeyhex) {
+    admin.respondHttp( 503, "key maintenance required" )
+  }
+
+  let redreslt = {
+    jsonrpc: "2.0",
+    result: replyobj,
+    id: cookie
+  }
+
+  let blkresp = ecjsonrpc.redToBlack( privkeyhex, topubkey, redreslt )
+
+  // TODO - post black response to other agent's URL by calling its encresult
+  //        service
+
+  fetch( 'http://' + url + '/cgibin/encresult', {
+    method: "POST",
+    body: JSON.stringify(blkresp)
+  }
+}
+
+//
+// main
+//
+
+if (! admin.isWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if (! process.env.REQUEST_METHOD === 'POST' ) {
+  admin.respondHttp( 405, "Please POST the result" )
+}
+
+let cookie = process.env.HTTP_COOKIE
+if (!cookie) {
+  admin.respondHttp( 400, "Please include a Cookie header with client pubkey" )
+}
+
+//  Cookie: agent=<pubkeyhex>&cookie=<requestcookie>
+let cookieparts = cookie.split( "&" )
+let topubkey = cookieparts[0].split('=')[1]
+let cookie = cookieparts[1].split('=')[1]
+
+if (!topubkey || !cookie)
+  admin.respondHttp( 400,
+    "Cookie header requires agent=pubkeyhex&cookie=requestcookie" )
+
+process.stdin.on('data', data => {
+  let body = JSON.parse( data.toString() )
+  handlePost( topubkey, cookie, body )
+});
+

@@ -1,0 +1,27 @@
+#!/usr/bin/node
+
+// retrieve the next new contact from the queue. returns the handle
+// and ec_public_key of the other agent, and unixtimestamp when they connected
+
+const sessions = require( './sessions.js' )
+const admin = require( './admin.js' )
+
+if (! admin.isWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if ( process.env.REQUEST_METHOD !== 'GET' ) {
+  admin.respondHttp( 405, "Please use GET" )
+}
+
+let sess = sessions.oldestValid()
+
+if (!sess)
+  admin.respondHttp( 200, "none found" )
+
+sessions.removeSession( sess.chB64 )
+
+admin.respondHttp( 200,
+  // TODO include handle
+  "pubkey=" + sess.clientpubkeyhex + " " + 
+  "responded=" + sess.responded )

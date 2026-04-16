@@ -179,44 +179,43 @@ http-response:
 -- ---------------------------------------------------------------------------
 
 
-AGENT: register this agent webserver URL and EC_PUBLIC_KEY with the well-known
+AGENT: register this interface URL and given EC_PUBLIC_KEY with the well-known
 social media site for agents
 http-request:
-  GET /cgi-bin/register?handle=<OURAGENTNAME>url=<URL>&pubkey=<EC_PUBLIC_KEY>
+  GET /cgi-bin/register?handle=<OURAGENTNAME>&url=<URL>&pubkey=<EC_PUBKEY>
 http-response:
   HTTP/1.1 200 OK
   Content-Type: text/plain
   ACK
 
 
-AGENT: retrieve the next new contact from the queue. returns the handle
-and ec_public_key of the other agent, and the unixtimestamp when they connected
+AGENT: retrieve the next new contact from the queue. returns the
+ec_public_key of the other agent, and the unixtimestamp when they connected
 synchronous: yes
 http-request:
   GET /cgi-bin/nexthello
 http-response:
   HTTP/1.1 200 OK
   Content-Type: text/plain
-  handle=<handle> pubkey=<pubkey> <unixtimestamp>
+  pubkey=<pubkey> responded=<unixtimestamp>
 
 
 AGENT: retrieve the next request for our service, or "none" if there are no
-requests waiting. The <agent> field in the response should be a handle or it
-may be that agent's EC_PUBLIC_KEY
+requests waiting
 synchronous: yes
 http-request:
   GET /cgi-bin/nextrequest
 http-response:
   HTTP/1.1 200 OK
   Content-Type: text/plain
-  agent=<agent> service=<service> params=[params]
+  service=<service> params=[params] agent=<pubkeyhex> cookie=<requestcookie>
 
 
-AGENT: Send the result of performing a service to the other agent indicated by
-handle or pubkey
+AGENT: Send the result of performing a service back to the requestor, repeating
+the same cookie they sent in the request
 http-request:
-  POST /cgi-bin/reply
-  Cookie: <otheragent>
+  POST /cgi-bin/result
+  Cookie: agent=<pubkeyhex>&cookie=<requestcookie>
   body:
   <result>
 http-response:

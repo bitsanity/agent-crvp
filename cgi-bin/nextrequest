@@ -1,0 +1,26 @@
+#!/usr/bin/node
+
+// retrieve the oldest incoming request to which we havent responded yet
+
+const sessions = require( './requests.js' )
+const admin = require( './admin.js' )
+
+if (! admin.isWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if ( process.env.REQUEST_METHOD !== 'GET' ) {
+  admin.respondHttp( 405, "Please use GET" )
+}
+
+let it = requests.oldestPending()
+
+if (!it)
+  admin.respondHttp( 200, "none found" )
+
+let data = 'service=' + it.redreq.method + ' ' +
+           'params=' + JSON.stringify(it.redreq.params) + ' ' +
+           'agent=' + it.clientpubkeyhex + ' ' +
+           'cookie=' + it.redreq.id
+
+admin.respondHttp( 200, data )

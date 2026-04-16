@@ -1,10 +1,14 @@
 const fs = require( 'node:fs' )
+const path = require( 'path' )
+
 const crypto = require( 'node:crypto' )
 const secp256k1 = require( 'secp256k1' )
 const adilos = require( 'adilosjs' )
 
+const DIR = './sessions/'
+
 function toFilename( chB64 ) {
-  return './sessions/' + chB64
+  return DIR + chB64
 }
 
 function writeSession( chall, data ) {
@@ -17,7 +21,13 @@ exports.getSession = function( challB64 ) {
   return JSON.parse( fs.readFileSync(fname, 'utf-8') )
 }
 
+exports.removeSession = function( challB64 ) {
+  let fname = toFilename( challB64 )
+  fs.unlinkSync( fname )
+}
+
 exports.newSession = function() {
+  // key not used for anything other than the challenge/response thats it
   let sessprivkey = new Uint8Array(32)
   crypto.getRandomValues( sessprivkey )
   let sesspubkey = Buffer.from( secp256k1.publicKeyCreate(sessprivkey, true) )
@@ -39,6 +49,7 @@ exports.newSession = function() {
   return data
 }
 
+
 exports.responded = function( challB64, pubkeyhex ) {
   let sess = exports.getSession( challB64 )
   sess.responded = Date.now()
@@ -46,3 +57,33 @@ exports.responded = function( challB64, pubkeyhex ) {
 
   writeSession( challB64, sess )
 }
+
+
+exports.oldestValid = function() {
+
+  const files =
+    fs.readdirSync( DIR )
+    .map(name => ({
+      name,
+      time: fs.statSync(path.join(dir, name)).mtime.getTime()
+    }))
+    .sort((a, b) => a.time - b.time) // oldest first
+    .map(f => f.name);
+
+  if (!files || files.length == 0) return null
+
+  let result = null
+
+  for (const f of files) {
+    let contents = exports.getSession( f )
+    if (contents.responsed && contents.clientpubkeyhex) {
+      result = contents
+      delete result.privhex
+      delete result.pubhex
+      break
+    }
+  }
+
+  return result
+}
+

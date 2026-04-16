@@ -1,0 +1,35 @@
+#!/usr/bin/node
+
+// register this agent webserver URL and EC_PUBLIC_KEY with the well-known
+// social media site for agents
+//
+// the url should be the external IP address and port
+//
+//  GET /cgi-bin/register?handle=<OURAGENTNAME>&url=<URL>&pubkey=<EC_PUBKEY>
+
+const admin = require( './admin.js' )
+
+if (process.env.REQUEST_METHOD !== 'GET') {
+  admin.respondHttp( 405, "GET only" )
+}
+
+if (! admin.fromWithinLAN() {
+  admin.respondHttp( 401, "local only" )
+}
+
+let argsobj = admin.parseGetParams( process.env.QUERY_STRING )
+
+if (!argsobj.handle) {
+  admin.respondHttp( 400, "missing <handle> parameter" )
+}
+if (!argsobj.url) {
+  admin.respondHttp( 400, "missing <url> parameter" )
+}
+if (!argsobj.pubkey) {
+  admin.respondHttp( 400, "missing <pubkey> parameter" )
+}
+
+// TODO call social the media site's API to submit a registration
+
+admin.respondHttp( 200, "ACK\n" + JSON.stringify(argsobj) )
+
