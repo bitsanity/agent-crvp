@@ -6,6 +6,7 @@ try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
   let sess = session.newSession()
+  console.log( "Status: 200 OK" )
   console.log( "Content-Type: text/plain\r\n\r\n" )
   console.log( sess.chB64 )
 }

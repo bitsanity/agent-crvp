@@ -60,6 +60,11 @@ function doAny( paramobj ) {
     redobj = paramobj
   }
 
+  // if this is a payable request then confirm the cookie is a valid payment
+  // receipt
+  // TODO
+  let cookie = redobj.cookie
+
   // everything ok if we got this far add to request queue
   requests.add( paramobj.spkhex, redobj )
 
@@ -85,10 +90,10 @@ function doGet() {
 
 function doPost() {
 
-  process.stdin.on('data', data => {
+  process.stdin.on( 'data', data => {
     let body = JSON.parse( data.toString() )
     doAny( body )
-  });
+  } )
 
 }
 
@@ -115,12 +120,10 @@ module.exports.dorequest = function() {
   process.exit( 0 )
 }
 
-// handle receiving the result of some request we sent to another agents
-// web interface
+// handle receiving the result of some request we sent to another agent
 
 module.exports.doresult = function() {
 
   // forward the result to our agent
-  // TODO
-
+  let msg = "<ec_public_key> sent this result: "
 }

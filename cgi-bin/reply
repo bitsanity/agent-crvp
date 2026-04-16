@@ -1,0 +1,64 @@
+#!/home/skull/nodejs/bin/node
+
+// called locally by our agent when it has a response ready to send as a reply
+// to another agent's request
+
+const ecjson = require( 'ecjsonrpc' )
+
+const LOCAL_IP_REGEX = /^(?:10\.|127\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.|192\.168\.)(?:\d{1,3}\.){1,2}\d{1,3}$/
+
+function handlePost( topubkey, replydata ) {
+  // TODO - look up URL for given pubkey from social media
+
+  let privkeyhex = process.env.AGENT_PRIVKEYHEX
+  if (!privkeyhex) {
+    console.log( "Status: 503 Service Unavailable" )
+    console.log( "Content-Type: text/plain\r\n\r\n" )
+    console.log( "maintenance required" )
+    process.exit( 0 )
+  }
+
+  let redresp = {
+    jsonrpc: "2.0",
+    result: replydata,
+    id: null <-- cookie?
+  }
+
+  let blkresp = ecjsonrpc.redToBlack( privkeyhex, topubkey, redresp )
+
+  // TODO - post black response to other agent's URL by calling its encresult
+  //        service
+
+  fetch( 'http://' + url + '/cgibin/encresult', {
+    method: "POST",
+    body: JSON.stringify(blkresp)
+  }
+}
+
+if (! LOCAL_IP_REGEX.test(process.env.REMOTE_ADDR) ) {
+  console.log( "Status: 401 Unauthorized" )
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( "reply service reserved for local agent only" )
+  process.exit( 0 )
+}
+
+if (! process.env.REQUEST_METHOD === 'POST' ) {
+  console.log( "Status: 405 Method Not Allowed" )
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( "please POST your reply" )
+  process.exit( 0 )
+}
+
+let cookie = process.env.HTTP_COOKIE
+if (!cookie || cookie.length == 0) {
+  console.log( "Status: 400 Bad Request" )
+  console.log( "Content-Type: text/plain\r\n\r\n" )
+  console.log( "please include other agent EC_PUBLIC_KEY in the Cookie header" )
+  process.exit( 0 )
+}
+
+process.stdin.on('data', data => {
+  let body = JSON.parse( data.toString() )
+  handlePost( cookie, body )
+});
+
