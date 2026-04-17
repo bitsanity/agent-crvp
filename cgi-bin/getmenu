@@ -5,16 +5,20 @@ const admin = require( './admin.js' )
 async function getMenu( url ) {
   try {
     const response = await fetch( url )
-    if (!response.ok) return null
+    if (!response.ok) throw 'no response'
 
-    return await response.json()
+    let contents = await response.text()
+    if (!contents || contents.length == 0)
+      throw 'no contents'
+
+    admin.respondHttp( 200, contents )
   }
   catch( e ) {
-    return null
+    admin.respondHttp( 404, e.toString() )
   }
 }
 
-if (! admin.isWithinLAN() ) {
+if (! admin.fromWithinLAN() ) {
   admin.respondHttp( 401, "local only" )
 }
 
@@ -28,11 +32,8 @@ if (!parms.agent)
   admin.respondHttp( 400, "missing agent-pubkey param" )
 
 // TODO - look up other agent by pubkey
-let url = 'http://' + 'localhost:9000' + '/index.html'
+let url = 'http://' + '127.0.0.1:9000' + '/index.html';
 
-let contents = await getMenu( url )
-
-if (!contents || contents.length == 0)
-  admin.respondHttp( 404, err.toString() )
-
-admin.respondHttp( 200, contents )
+(async () => {
+  const result = await getMenu( url )
+})();

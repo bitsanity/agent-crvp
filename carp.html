@@ -53,19 +53,19 @@ http-response:
 
 RULE: Requests when decrypted must be JSON-RPC messages like this
   {
-    jsonrpc: "2.0",
-    method: service-to-call,
-    params: [service-specific-parameters]
-    id: cookie
+    "jsonrpc": "2.0",
+    "method": service-to-call,
+    "params": [service-specific-parameters]
+    "id": cookie
   }
 
 
 RULE: Our response to any request will be a JSON-RPC object containing the
 same cookie sent in the request
   {
-    jsonrpc: "2.0",
-    result: {service-specific-result-object},
-    id: cookie
+    "jsonrpc": "2.0",
+    "result": {service-specific-result-object},
+    "id": cookie
   }
 
 
@@ -73,20 +73,20 @@ RULE: Our response to any request that encounters an error will be a JSON-RPC
 object with an error object containing helpful information and the same cookie
 as in the request
   {
-    jsonrpc: "2.0",
-    error: {
-      code: errorcode,
-      message: "errortxt"
+    "jsonrpc": "2.0",
+    "error": {
+      "code": errorcode,
+      "message": "errortxt"
     },
-    id: cookie
+    "id": cookie
   }
 
 
 RULE: Wherever services require fees, we declare an array of payment options
 fee:
   [
-    { amt: "amount1", network: "network1" },
-    { amt: "amount2", network: "network2" }
+    { "amt": "amount1", "network": "network1" },
+    { "amt": "amount2", "network": "network2" }
   ]
 
 
@@ -94,12 +94,12 @@ RULE: For services that require payment, please provide your proof-of-payment
 object as the cookie parameter in your request
 request
   {
-    jsonrpc: "2.0",
-    method: service-to-call,
-    params: [service-specific-parameters]
-    id: {
-      ref: "txnhash",
-      network: "network"
+    "jsonrpc": "2.0",
+    "method": service-to-call,
+    "params": [service-specific-parameters]
+    "id": {
+      "ref": "txnhash",
+      "network": "network"
     }
   }
 

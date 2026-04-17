@@ -11,7 +11,9 @@ function writeRecord( pubkeyhex, data ) {
 
 exports.getRecord = function( pubkeyhex ) {
   let fname = toFilename( pubkeyhex )
-  return JSON.parse( fs.readFileSync(fname, 'utf-8') )
+  if (fs.existsSync(fname))
+    return JSON.parse( fs.readFileSync(fname, 'utf-8') )
+  return null
 }
 
 exports.newEntry = function( pubkeyhex ) {

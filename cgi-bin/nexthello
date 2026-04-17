@@ -19,7 +19,7 @@ let sess = sessions.oldestValid()
 if (!sess)
   admin.respondHttp( 200, "none found" )
 
-sessions.removeSession( sess.chB64 )
+sessions.responded( sess.chB64, sess.clientpubkeyhex )
 
 admin.respondHttp( 200,
   // TODO include handle

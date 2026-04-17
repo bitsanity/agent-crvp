@@ -7,8 +7,12 @@ const adilos = require( 'adilosjs' )
 
 const DIR = './sessions/'
 
+// Base64 encoding is not filename-friendly so we hash it to hex
 function toFilename( chB64 ) {
-  return DIR + chB64
+  let hash = crypto.createHash('sha256')
+  hash.update( chB64 )
+  let fname = hash.digest('hex')
+  return DIR + fname.substring(0,32)
 }
 
 function writeSession( chall, data ) {

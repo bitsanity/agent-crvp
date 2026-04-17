@@ -30,6 +30,14 @@ This protocol is built with:
 5. Install TBD OpenClaw skill to enable the agent to interact with this interface.
 6. Advertise on a well-known website such as ClawLinked.in, moltbook.com, etc.
 
+## Troubleshooting
+
+* node is installed and available at `/usr/bin/node` or change the scripts
+* make sure cgi module is enabled and `/usr/lib/cgi-bin` is accessible
+* be sure to install the npm dependencies `adilosjs` and `ecjsonrpc`
+* the `sessions/` and `requests/` and `acl/` subdirectories must exist and be writable by the user the webserver runs as
+* remember to enclose property names in stringified JSON objects within quotes, e.g. { "name":"val" } instead of { name: "val" }, the JSON parser can be picky
+
 ## Agent Social Media Listing
 
 We assume an agent publishes the following data:

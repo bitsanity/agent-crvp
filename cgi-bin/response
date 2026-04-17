@@ -8,38 +8,26 @@ const acl = require( './acl.js' )
 const adilos = require( 'adilosjs' )
 const admin = require( './admin.js' )
 
-try {
-  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+var rspB64, chB64, sess, pubkeyhex, aclrec
 
-  let rspB64, chB64, sess, pubkeyhex, aclrec
+function validateParams( bodyobj ) {
+  if (!bodyobj || !bodyobj.rsp || !bodyobj.chall)
+    throw 'body should be {rsp:"<rspB64>",chall:"<chB64>"}'
 
-  // parse out params and validate the response
+  rspB64 = bodyobj.rsp
+  chB64 = bodyobj.chall
 
-  try {
-    let args = admin.parseGetParams( process.env.QUERY_STRING )
+  sess = session.getSession( chB64 )
+  if (!sess) throw 'challenge is not a valid session'
 
-    if (!args || !args.rsp || !args.chall)
-      throw 'missing arg(s), should be ?rsp=rspB64&chall=chB64'
+  let pubkeybytes = adilos.validateResponse( rspB64, chB64 )
+  if (!pubkeybytes || pubkeybytes.length == 0)
+    throw 'invalid adilos response for challenge'
 
-    rspB64 = decodeURIComponent(args[0].split('=')[1] || '')
-    if (!rspB64 || rspB64.length == 0) throw 'missing response parameter'
+  pubkeyhex = adilos.toHexString( pubkeybytes )
+}
 
-    chB64 = decodeURIComponent(args[1].split('=')[1] || '')
-    if (!chB64 || chB64.length == 0) throw 'missing challenge parameter'
-
-    sess = session.getSession( chB64 )
-    if (!sess) throw 'challenge is not a valid session'
-
-    let pubkeybytes = adilos.validateResponse( rspB64, chB64 )
-    if (!pubkeybytes || pubkeybytes.length == 0)
-      throw 'response is not valid for the challenge'
-
-    pubkeyhex = adilos.toHexString( pubkeybytes )
-  }
-  catch( paramex ) {
-    admin.respondHttp( 400, paramex.toString() )
-  }
-
+function checkSocialMedia() {
   try {
     // TODO - look up pubkey on the agent social media site and confirm the
     // caller is listed and is calling from their stated URL
@@ -53,9 +41,9 @@ try {
   catch( listex ) {
     admin.respondHttp( 401, listex.toString() )
   }
+}
 
-  // Check if the caller has previously been banned by us
-
+function checkBanned() {
   try {
     aclrec = acl.getRecord( pubkeyhex )
     if ( aclrec && aclrec.bannedDate )
@@ -64,16 +52,40 @@ try {
   catch( bannedex ) {
     admin.respondHttp( 403, bannedex.toString() )
   }
+}
+
+function handleResponse( bodystr ) {
+  try {
+    let bodyobj = JSON.parse( bodystr )
+    validateParams( bodyobj )
+  }
+  catch( paramex ) {
+    admin.respondHttp( 400, paramex.toString() )
+  }
+
+  checkSocialMedia()
+  checkBanned()
 
   session.responded( chB64, pubkeyhex )
 
-  // no previous entry and we got this far with a valid response so add to ACL
   if (!aclrec) {
     acl.newEntry( pubkeyhex )
   }
+}
 
-  admin.respondHttp( 200, 'Hello ' + pubkeyhex )
-}
-catch( ex ) {
-  admin.respondHttp( 500, ex.toString() )
-}
+//
+// main
+//
+if (process.env.REQUEST_METHOD !== 'POST')
+  admin.respondHttp( 405, "POST only" )
+
+process.stdin.on( 'data', data => {
+  try {
+    handleResponse( data.toString() )
+    admin.respondHttp( 200, 'Hello ' + pubkeyhex )
+  }
+  catch( ex ) {
+    admin.respondHttp( 500, ex.toString() )
+  }
+} )
+

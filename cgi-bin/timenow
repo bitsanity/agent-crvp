@@ -5,5 +5,5 @@ const admin = require( './admin.js' )
 if (process.env.REQUEST_METHOD !== 'GET')
   admin.respondHttp( 405, "Please use GET" )
 
-respondHttp.( 200, Date.now() )
+admin.respondHttp( 200, Date.now() )
 

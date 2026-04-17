@@ -6,14 +6,14 @@
 const fs = require( 'node:fs' )
 const path = require( 'path' )
 
-const DIR = './requests'
+const DIR = './requests/'
 
 function isString(val) {
   return Object.prototype.toString.call(val) === '[object String]';
 }
 
 function toFilename( pubkeyhex ) {
-  return DIR + "/" + pubkeyhex
+  return DIR + pubkeyhex
 }
 
 // returns JSON array
