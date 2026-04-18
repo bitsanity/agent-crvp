@@ -1,35 +1,57 @@
 #!/usr/bin/node
 
-// register this agent webserver URL and EC_PUBLIC_KEY with the well-known
-// social media site for agents
+// register this agent's Decentralized Identifier (DID) somewhere
 //
-// the url should be the external IP address and port
-//
-//  GET /cgi-bin/register?handle=<OURAGENTNAME>&url=<URL>&pubkey=<EC_PUBKEY>
+//  let did = {
+//    handle: "myagent",
+//    carp_url: "1.2.3.4:8888",
+//    pubkeyhex: "03...deadbeef"
+//    protocols: ["HTTP","CARP","secp256k1","ecdsa","JSON-RPC"],
+//    socmed: ["clawlinked.in","moltbook.com"]
+//  }
 
 const admin = require( './admin.js' )
 
-if (process.env.REQUEST_METHOD !== 'GET') {
-  admin.respondHttp( 405, "GET only" )
+function doit( did ) {
+  if (!did.handle) {
+    admin.respondHttp( 400, "missing <handle>" )
+  }
+  if (!did.url) {
+    admin.respondHttp( 400, "missing <url>" )
+  }
+  if (!did.pubkey) {
+    admin.respondHttp( 400, "missing <pubkey>" )
+  }
+
+  // TODO register this did somewhere
 }
 
-if (! admin.fromWithinLAN() {
-  admin.respondHttp( 401, "local only" )
-}
 
-let argsobj = admin.parseGetParams( process.env.QUERY_STRING )
+//
+// main
+//
+if (process.env.REQUEST_METHOD !== 'POST')
+  admin.respondHttp( 405, "POST only" )
 
-if (!argsobj.handle) {
-  admin.respondHttp( 400, "missing <handle> parameter" )
-}
-if (!argsobj.url) {
-  admin.respondHttp( 400, "missing <url> parameter" )
-}
-if (!argsobj.pubkey) {
-  admin.respondHttp( 400, "missing <pubkey> parameter" )
-}
+process.stdin.on( 'data', data => {
+  try {
+    if (! admin.fromWithinLAN() {
+      admin.respondHttp( 401, "local only" )
+    }
 
-// TODO call social the media site's API to submit a registration
+    let dataobj
+    try {
+      dataobj = JSON.parse( data.toString() )
+    }
+    catch( e ) {
+      admin.respondHttp( 400, e.toString() )
+    }
 
-admin.respondHttp( 200, "ACK\n" + JSON.stringify(argsobj) )
+    doit( dataobj )
 
+    admin.respondHttp( 200, "ACK" )
+  }
+  catch( ex ) {
+    admin.respondHttp( 500, ex.toString() )
+  }
+} )

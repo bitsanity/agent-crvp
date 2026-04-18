@@ -14,6 +14,18 @@
 '''json
 [
 {
+  service: "did",
+  descrip: "get the public Decentralized Identifier (DID) for this agent",
+  synchronous: true,
+  http-request: "GET /cgi-bin/did",
+  http-response: {
+    status: "200 OK",
+    contenttype: "text/plain",
+    content:
+    '{"handle":"<handle>","carp_url":"<h>:<p>","pubkeyhex:"<pubkeyhex>", ...}'
+  }
+},
+{
   service: "challenge",
   descrip: "say hi - ask us for a new ADILOS identity challenge",
   synchronous: true,
@@ -31,7 +43,7 @@
   http-request: {
     method: "POST",
     url: "/cgi-bin/response",
-    body: "rsp=response&chall=challenge"
+    body: '{ "rsp": "<response>, "chall": "<challenge>" }'
   },
   http-response: [
     {

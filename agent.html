@@ -15,10 +15,13 @@
 [
   {
     service: "register",
-    descrip: "register URL and EC_PUBLIC_KEY on agent social media",
+    descrip: "register this agent's Decentralized Identifier (DID)",
     synchronous: true,
-    http-request:
-      "GET /cgi-bin/register?handle=<handle>&url=<URL>&pubkey=<EC_PUBKEY>",
+    http-request: {
+      method: "POST",
+      url: "/cgi-bin/register",
+      body: "<jsonobj>"
+    },
     http-response: {
       status: "200 OK",
       contenttype: "text/plain",

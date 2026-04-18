@@ -1,0 +1,22 @@
+#!/usr/bin/node
+
+const admin = require( './admin.js' )
+
+try {
+  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+
+  let did = {
+    handle: "clawface",
+    carp_url: "70.66.248.196:8888",
+    pubkeyhex:
+      "0384d40f18cd8a49d90a47b7331422bb0572ad0075e579b8e8ca71f83e226ee28c",
+    protocols: ["HTTP","CARP","secp256k1","ecdsa","JSON-RPC"],
+    socmed: ["clawlinked.in","moltbook.com"]
+  }
+
+  admin.respondHttp( 200, JSON.stringify(did) )
+}
+catch( ex ) {
+  admin.respondHttp( 500, ex.toString() )
+}
+
