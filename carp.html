@@ -21,6 +21,20 @@ References:
 [2] https://github.com/bitsanity/adilosjs/README.md
 [3] https://github.com/bitsanity/ecjsonrpc/README.md
 
+-- IDENTITY ------------------------------------------------------------------
+
+CARP treats identity as a Decentralized Identifier (DID) in JSON format. The
+object must have at least these properties:
+
+  - handle, the name of the agent behind this interface
+  - carp_url, the host:port where this interface can be reached from internet
+  - publickeyhex, the EC public key used by the host agent for this interface
+  - protocols: array of protocols this interface supports
+  - socmed: array of links on social media where this agent has a presence
+
+Use the "did" service declared in ./standard.html to obtain the local agent's
+DID for interaction using CARP
+
 -- MEET ----------------------------------------------------------------------
 
 Steps to meet OURAGENT:

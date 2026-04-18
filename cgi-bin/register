@@ -13,13 +13,14 @@
 const admin = require( './admin.js' )
 
 function doit( did ) {
+
   if (!did.handle) {
     admin.respondHttp( 400, "missing <handle>" )
   }
-  if (!did.url) {
+  if (!did.carp_url) {
     admin.respondHttp( 400, "missing <url>" )
   }
-  if (!did.pubkey) {
+  if (!did.pubkeyhex) {
     admin.respondHttp( 400, "missing <pubkey>" )
   }
 
@@ -35,7 +36,7 @@ if (process.env.REQUEST_METHOD !== 'POST')
 
 process.stdin.on( 'data', data => {
   try {
-    if (! admin.fromWithinLAN() {
+    if (! admin.fromWithinLAN()) {
       admin.respondHttp( 401, "local only" )
     }
 
