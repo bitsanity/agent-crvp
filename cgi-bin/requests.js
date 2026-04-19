@@ -49,9 +49,10 @@ function replace( pubkeyhex, cookie, obj ) {
 
   for( let ii = 0; ii < records.length; ii++ ) {
     let rec = records[ii]
-    if (    rec.redreq && rec.redreq.cookie
-         && rec.redreq.cookie === cookiestr ) {
+    if (    rec.redreq && rec.redreq.id
+         && rec.redreq.id === cookiestr ) {
       records[ii] = obj
+      writeFile( pubkeyhex, records )
       return
     }
   }
@@ -71,8 +72,8 @@ exports.get = function( pubkeyhex, cookie ) {
     let rec = records[ii]
 
     if (    rec.redreq
-         && rec.redreq.cookie
-         && rec.redreq.cookie === cookiestr ) {
+         && rec.redreq.id
+         && rec.redreq.id === cookiestr ) {
       return rec
     }
   }
@@ -128,7 +129,7 @@ exports.oldestPending = function() {
 
   for (const f of files) {
     let contents = exports.get( f )
-    if (!contents.completed)
+    if (!contents.completed) {
       result = contents
       break
     }

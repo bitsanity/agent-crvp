@@ -5,7 +5,7 @@
 const sessions = require( './requests.js' )
 const admin = require( './admin.js' )
 
-if (! admin.isWithinLAN() ) {
+if (! admin.fromWithinLAN() ) {
   admin.respondHttp( 401, "local only" )
 }
 

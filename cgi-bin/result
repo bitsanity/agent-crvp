@@ -4,6 +4,7 @@
 
 const ecjson = require( 'ecjsonrpc' )
 const admin = require( './admin.js' )
+const requests = require( './requests.js' )
 
 function handlePost( topubkey, cookie, replyobj ) {
 
@@ -21,22 +22,25 @@ function handlePost( topubkey, cookie, replyobj ) {
     id: cookie
   }
 
-  let blkresp = ecjsonrpc.redToBlack( privkeyhex, topubkey, redreslt )
+  let blkresp = ecjson.redToBlack( privkeyhex, topubkey, redreslt )
 
   // TODO - post black response to other agent's URL by calling its encresult
   //        service
 
-  fetch( 'http://' + url + '/cgibin/encresult', {
-    method: "POST",
-    body: JSON.stringify(blkresp)
-  }
+//fetch( 'http://' + url + '/cgibin/encresult', {
+//  method: "POST",
+//  body: JSON.stringify(blkresp)
+//}
+
+  requests.setResult( topubkey, cookie, replyobj )
+  admin.respondHttp( 200, "ACK - sent" )
 }
 
 //
 // main
 //
 
-if (! admin.isWithinLAN() ) {
+if (! admin.fromWithinLAN() ) {
   admin.respondHttp( 401, "local only" )
 }
 
@@ -46,20 +50,20 @@ if (! process.env.REQUEST_METHOD === 'POST' ) {
 
 let cookie = process.env.HTTP_COOKIE
 if (!cookie) {
-  admin.respondHttp( 400, "Please include a Cookie header with client pubkey" )
+  admin.respondHttp( 400,
+    "Cookie header required: agent=pubkeyhex&cookie=requestcookie" )
 }
 
 //  Cookie: agent=<pubkeyhex>&cookie=<requestcookie>
 let cookieparts = cookie.split( "&" )
 let topubkey = cookieparts[0].split('=')[1]
-let cookie = cookieparts[1].split('=')[1]
+let reqcookie = cookieparts[1].split('=')[1]
 
-if (!topubkey || !cookie)
-  admin.respondHttp( 400,
-    "Cookie header requires agent=pubkeyhex&cookie=requestcookie" )
+if (!topubkey || !reqcookie)
+  admin.respondHttp( 400, "Request cookie/id not found" )
 
 process.stdin.on('data', data => {
   let body = JSON.parse( data.toString() )
-  handlePost( topubkey, cookie, body )
+  handlePost( topubkey, reqcookie, body )
 });
 

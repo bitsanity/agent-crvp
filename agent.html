@@ -41,7 +41,7 @@
   },
   {
     service: "nextrequest",
-    descrip: "retrieve the next request waiting for our service",
+    descrip: "retrieve the next incoming request waiting for our service",
     synchronous: true,
     http-request: "GET /cgi-bin/nextrequest",
     http-response: {
@@ -53,7 +53,8 @@
   },
   {
     service: "result",
-    descrip: "send a result back to the requestor's CARP interface",
+    descrip:
+      "send this result of handling an incoming request to the requestor",
     synchronous: true,
     http-request: {
       method: "POST",
@@ -65,6 +66,18 @@
       status: "200 OK",
       contenttype: "text/plain",
       content: "ACK"
+    }
+  },
+  {
+    service: "nextanswer",
+    descrip:
+      "get the next result from another agent for one of our requests",
+    synchronous: true,
+    http-request: "GET /cgi-bin/nextanswer",
+    http-response: {
+      status: "200 OK",
+      contenttype: "text/plain",
+      content: "<null || {result} || {error}>"
     }
   },
   {

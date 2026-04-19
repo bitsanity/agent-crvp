@@ -3,24 +3,19 @@
 const session = require( './sessions.js' )
 const ecjson = require( 'ecjsonrpc' )
 const requests = require( './requests.js' )
+const answers = require( './answers.js' )
 const acl = require( './acl.js' )
+const admin = require( './admin.js' )
 
 function screen( pubkeyhex ) {
 
   let caller = acl.getRecord( pubkeyhex )
   if (!caller) {
-    console.log( "Status: 401 Unauthorized" )
-    console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( pubkeyhex + " is not on our ACL. Please register." )
-    process.exit( 0 )
+    admin.respondHttp( 401, " not on ACL. Please register." )
   }
 
   if (caller.bannedDate) {
-    console.log( "Status: 403 Forbidden" )
-    console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( pubkeyhex + " recognized, but banned due to: " +
-                 caller.bannedReason )
-    process.exit( 0 )
+    admin.respondHttp( 403, "recognized, but banned" )
   }
 }
 
@@ -28,24 +23,18 @@ function toRedObj( blkobj ) {
   let privkeyhex = process.env.AGENT_PRIVKEYHEX
 
   if (!privkeyhex) {
-    console.log( "Status: 503 Service Unavailable" )
-    console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( "maintenance required" )
-    process.exit( 0 )
+    admin.respondHttp( 503, "maintenance required" )
   }
 
   let redobj = ecjson.blackToRed( privkeyhex, blkobj )
   if (!redobj) {
-    console.log( "Status: 400 Bad Request" )
-    console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( "signature validation/decryption failed" )
-    process.exit( 0 )
+    admin.respondHttp( 400, "signature validation/decryption failed" )
   }
 
   return redobj
 }
 
-function doAny( paramobj ) {
+function processRequest( paramobj ) {
 
   let redobj
 
@@ -63,67 +52,66 @@ function doAny( paramobj ) {
   // if this is a payable request then confirm the cookie is a valid payment
   // receipt
   // TODO
-  let cookie = redobj.cookie
+  let cookie = redobj.id
 
   // everything ok if we got this far add to request queue
   requests.add( paramobj.spkhex, redobj )
 
-  console.log( "Status: 200 OK" )
-  console.log( "Content-Type: text/plain" )
-  console.log( "ACK" )
-  process.exit( 0 )
+  admin.respondHttp( 200, "ACK" )
 }
 
-function doGet() {
+function processAnswer( blkobj ) {
+  try {
+    let redobj = toRedObj( blkobj )
+    redobj.sender = blkobj.spkhex
 
-  let reqobj = {}
-  let args = process.env.QUERY_STRING.split('&')
-
-  for ( var ii = 0; ii < args.length; ii++ ) {
-    let arg = args[ii].split('=')
-    let argname = arg[0], argval = arg[1]
-    reqobj[ argname ] = argval
+    if (redobj.result) {
+      redobj.result.id = redobj.id
+      answers.enqueue( redobj.id, redobj.result )
+    }
+    else if (redobj.error) {
+      redobj.error.id = redobj.id
+      answers.enqueue( redobj.id, redobj.error )
+    }
+    else
+      admin.respondHttp( 400, "message must include result or error" )
+  }
+  catch( ex ) {
+    admin.respondHttp( 500, ex.getMessage() )
   }
 
-  doAny( reqobj ) 
-}
-
-function doPost() {
-
-  process.stdin.on( 'data', data => {
-    let body = JSON.parse( data.toString() )
-    doAny( body )
-  } )
-
+  admin.respondHttp( 200, "ACK" )
 }
 
 // handle receiving a request from another agent
 
 module.exports.dorequest = function() {
 
-  try {
-    if (process.env.REQUEST_METHOD === 'GET') {
-      doGet()
-    }
-    else if (process.env.REQUEST_METHOD === 'POST') {
-      doPost()
-    }
-    else
-      throw "unrecognized REQUEST_METHOD: " + process.env.REQUEST_METHOD
-  }
-  catch( ex ) {
-    console.log( "Status: 400 Bad Request" )
-    console.log( "Content-Type: text/plain\r\n\r\n" )
-    console.log( ex.toString() )
+  // all encrequests are POST 
+  if (process.env.REQUEST_METHOD !== 'POST') {
+      admin.responseHttp( 405, "POST only" )
   }
 
-  process.exit( 0 )
+  process.stdin.on( 'data', data => {
+    let body = JSON.parse( data.toString() )
+    processRequest( body )
+  } )
+
 }
 
 // handle receiving the result of some request we sent to another agent
 
 module.exports.doresult = function() {
 
-  // forward the result to our agent
-  let msg = "<ec_public_key> sent this result: "
+  // all encresults are POST 
+  if (process.env.REQUEST_METHOD !== 'POST') {
+      admin.responseHttp( 405, "POST only" )
+  }
+
+  process.stdin.on( 'data', data => {
+    let body = JSON.parse( data.toString() )
+    processAnswer( body )
+  } )
+
 }
+
