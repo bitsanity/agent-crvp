@@ -1,0 +1,81 @@
+#!/usr/bin/node
+
+// called locally by our agent when it has a request to make of another agent
+
+const ecjson = require( 'ecjsonrpc' )
+const admin = require( './admin.js' )
+const requests = require( './requests.js' )
+
+async function handlePost( topubkey, reqobj ) {
+
+  let privkeyhex = process.env.AGENT_PRIVKEYHEX
+  if (!privkeyhex) {
+    admin.respondHttp( 503, "key maintenance required" )
+  }
+
+  // TODO look up other agent's url by pubkey from social media
+  let url = "1.2.3.4:8888"
+
+  if (!url || url.length == 0)
+    admin.respondHttp( 400, "url not located" )
+
+  try {
+    let blkreq = ecjson.redToBlack( privkeyhex, topubkey, reqobj )
+
+//  let rsp = await fetch( 'http://' + url + '/cgibin/encrequest', {
+//    method: "POST",
+//    body: JSON.stringify(blkreq)
+//  } )
+//
+//  let res = await rsp.text()
+
+    let res = "test result"
+
+    // TODO should we record outgoing requests and offer our agent an admin
+    //      service to look up pending outgoing requests?
+
+    admin.respondHttp( 200, res )
+  }
+  catch( e ) {
+    admin.respondHttp( 500, e.toString() )
+  }
+}
+
+//
+// main
+//
+
+if (! admin.fromWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if (! process.env.REQUEST_METHOD === 'POST' ) {
+  admin.respondHttp( 405, "Please POST the request" )
+}
+
+let cookie = process.env.HTTP_COOKIE
+if (!cookie) {
+  admin.respondHttp( 400,
+    "Cookie header required: to=pubkeyhex" )
+}
+
+//  Cookie: to=<pubkeyhex>
+let topubkey = cookie.split('=')[1]
+
+if (!topubkey || topubkey.length == 0)
+  admin.respondHttp( 400, "Request <to> not found" )
+
+process.stdin.on('data', data => {
+  try {
+    let body = JSON.parse( data.toString() )
+
+    if (!body.method || !body.params || !body.id)
+      throw 'body must be a JSON-RPC request'
+
+    handlePost( topubkey, body )
+  }
+  catch( e ) {
+    admin.respondHttp( 400, e.toString() )
+  }
+});
+

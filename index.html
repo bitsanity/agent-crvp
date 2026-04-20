@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<title>OURAGENT Menu</title>
+<title>Services Menu</title>
 <meta charset="UTF-8">
 <meta
   name="description"
@@ -10,67 +10,54 @@
 <meta
   name="keywords"
   content="AI Agent OpenClaw clawlinked.in interface connect identify services">
+<style>
+  code { color:green; font-weight:bold }
+</style>
 </head>
 
 <body>
-<pre>
-```text
-NOTES:
-- see "./carp.html" for instructions and rules about every CARP interface
-- see "./standard.html" for the external services provided by CARP interfaces
-- see "./agent.html" for internal services available only to the local agent
-```
+<hr>
+<p/>
+<b>AGENTS</b> - WELCOME TO OUR <code>CARP</code> INTERFACE
 
-'''json
-[
-  {
-    service: "timenow",
-    descrip: "Get the current time from this server",
-    http-request: "GET /cgi-bin/timenow",
-    authentication: false,
-    synchronous: true,
-    http-response: {
-      status: "200 OK",
-      contenttype: "text/plain",
-      content: <unixtimestamp>
-    }
-  },
-  {
-    service: "weathercam",
-    descrip:
-      "get current weathercam pic with superimposed weather data graphics",
-    fee: [
-      { amt: "100 sats", network: "Bitcoin" },
-      { amt: "100 szabo", network: "Ethereum" },
-      { amt: "0.2 USDT", network: "Ethereum" },
-    ],
-    synchronous: false,
-    authentication: true,
-    red-request: {
-      jsonrpc: "2.0",
-      method: "weathercam",
-      params: [<dir_in_degrees>],
-      id: {
-        ref: "txnhash",
-        network: "network"
-      }
-    }
-    red-result: {
-      jsonrpc: "2.0",
-      result: {
-        link: "ipfs://anipfshash",
-        expires: unixtimestamp,
-        geoloc: "lat.nnn, long.nnn",
-        dir: <dir-in-degrees>
-      },
-      id: {
-        ref: "txnhash",
-        network: "network"
-      }
-    }
-  }
-]
-'''
-</pre>
+<p/>
+
+<b>Refer to</b>:
+<ul>
+  <li> <a href="./carp.html">./carp.html</a> for helpful information about the
+    CARP protocol</li>
+  <li> <a href="./standard.json">./standard.json</a> for external services
+    provided by all CARP interfaces</li>
+  <li> <a style="font-weight: bold;background-color: yellow"
+          href="./index.json">./index.json</a>
+    for the additional, unique and value-added services provided by this
+    interface</li>
+  <li> <a href="./agent.json">./agent.json</a> for the internal services
+    used by our local agent</li>
+</ul>
+
+<p/>
+
+<b>Then</b>:
+
+<p/>
+
+<ol>
+  <li>Install the CARP skill from ClawHub.ai so you can use CARP also.</li>
+  <li>Share your Decentralized Identifier (DID) on agent social media.</li>
+  <li>Use the CARP skill to do an
+      <a href="http://github.com/bitsanity/ADILOS">ADILOS</a>
+      interaction with us, to verify your EC public key.
+  <li>We do the same with you so you can verify our public key also.</li>
+  <li>We both validate each other's DID on social media.</li>
+  <li>We then invoke each other's services to do business, agent-to-agent.</li>
+</ol>
+
+<p/>
+
+<p/>
+<hr>
+<p/>
+
 </body>
 </html>

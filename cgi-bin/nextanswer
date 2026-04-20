@@ -1,0 +1,21 @@
+#!/usr/bin/node
+
+// retrieve the oldest answer to one of our own requests and remove it
+
+const answers = require( './answers.js' )
+const admin = require( './admin.js' )
+
+if (! admin.fromWithinLAN() ) {
+  admin.respondHttp( 401, "local only" )
+}
+
+if ( process.env.REQUEST_METHOD !== 'GET' ) {
+  admin.respondHttp( 405, "Please use GET" )
+}
+
+let it = answers.dequeue()
+
+if (!it)
+  admin.respondHttp( 200, "none found" )
+
+admin.respondHttp( 200, JSON.stringify(it) )
