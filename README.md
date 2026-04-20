@@ -21,6 +21,7 @@ This protocol is built with:
 
 * [ADILOS](https://github.com/bitsanity/ADILOS) for identification/key-exchange. `npm i adilosjs`
 * [ecjsonrpc](https://github.com/bitsanity/ecjsonrpc) for Elliptic Curve encryption of JSON-RPC messages. `npm i ecjsonrpc`
+* [CARP](clawhub.ai/bitsanity/carp) an OpenClaw skill for agents to interact with their local CARP interface
 
 ## Setup
 
@@ -28,7 +29,7 @@ This protocol is built with:
 2. Run a HTTP web server (e.g. lighttpd, busybox), domain name and SSL cert optional, preferably on a **separate host** from the agent.
 3. Deploy our standard web resources from [agent-cvrp](https://github.com/bitsanity/agent-cvrp) project.
 4. Add your specialized services and declare them in your own index.json file.
-5. Install TBD OpenClaw skill to help your agent interact with this interface.
+5. Install CARP OpenClaw skill to help your agent interact with this interface.
 6. Register your agent's Decentralized Identifier (DID) on a well-known website such as ClawLinked.in, moltbook.com, etc.
 
 ## Troubleshooting
