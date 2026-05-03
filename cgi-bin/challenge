@@ -7,7 +7,16 @@ try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
   let sess = session.newSession()
-  admin.respondHttp( 200, sess.chB64 )
+
+  let result = {
+    jsonrpc: "2.0",
+    result: {
+      adilos_challenge: sess.chB64
+    },
+    id: 0
+  }
+
+  admin.respondHttp( 200, result )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )

@@ -1,6 +1,7 @@
 #!/usr/bin/node
 
 const HTTPRESPONSES = {
+  102 : "Processing",
   200 : "OK",
   400 : "Bad Request",
   401 : "Unauthorized",
@@ -17,7 +18,7 @@ const LOCAL_IP_REGEX = /^(?:10\.|127\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.|1
 
 module.exports.respondHttp = function( statcode, content ) {
   console.log( "HTTP/1.1 " + statcode + " " + HTTPRESPONSES[statcode] )
-  console.log( "Content-Type: text/plain" )
+  console.log( "Content-Type: application/json" )
   console.log( content )
   process.exit( 0 )
 }

@@ -111,12 +111,10 @@ request
     "jsonrpc": "2.0",
     "method": service-to-call,
     "params": [service-specific-parameters]
-    "id": {
-      "ref": "txnhash",
-      "network": "network"
-    }
+    "id": "txnhash"
   }
 
+RULE: We use the approve() and transferFrom() mechanism for payments of tokens. Please call the ERC20.approve() and include that txnhash as the cookie when paying in tokens. Please do not use ERC20.transfer()
 
 -- OUR SERVICES --------------------------------------------------------------
 

@@ -1,28 +1,13 @@
 [
   {
-    "service": "register",
-    "descrip": "register this agent's Decentralized Identifier (DID)",
-    "synchronous": true,
-    "http-request": {
-      "method": "POST",
-      "url": "/cgi-bin/register",
-      "body": "<jsonobj>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "text/plain",
-      "content": "ACK"
-    }
-  },
-  {
     "service": "nexthello",
     "descrip": "retrieve the next new contact from the queue",
     "synchronous": true,
     "http-request": "GET /cgi-bin/nexthello",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
-      "content": "pubkey=<pubkey> responded=<unixtimestamp>"
+      "contenttype": "application/json",
+      "content": "{red-jsonrpc-obj}"
     }
   },
   {
@@ -32,13 +17,14 @@
     "http-request": "GET /cgi-bin/nextrequest",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
-      "content": "service=<service> params=[parms] agent=<pubkeyhex> cookie=<acookie>"
+      "contenttype": "application/json",
+      "content": "{red-jsonrpc-obj}"
     }
   },
   {
     "service": "result",
-    "descrip": "send this result of handling an incoming request to the requestor",
+    "descrip":
+      "send this result of handling an incoming request to the requestor",
     "synchronous": true,
     "http-request": {
       "method": "POST",
@@ -48,34 +34,36 @@
     },
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "ACK"
     }
   },
   {
     "service": "nextanswer",
-    "descrip": "get the next result from another agent for one of our requests",
+    "descrip":
+      "get the next result from another agent for one of our requests",
     "synchronous": true,
     "http-request": "GET /cgi-bin/nextanswer",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
-      "content": "<null || {result} || {error}>"
+      "contenttype": "application/json",
+      "content": "{red-jsonrpc-obj}"
     }
   },
   {
     "service": "obrequest",
-    "descrip": "send an outbound encrypted request for service to another agent",
+    "descrip":
+      "send an outbound encrypted request for service to another agent",
     "synchronous": true,
     "http-request": {
       "method": "POST",
       "url": "/cgi-bin/obrequest",
       "header": "Cookie: to=<pubkeyhex>",
-      "body": "<red-json-rpc-request>"
+      "body": "{red-jsonrpc-obj}"
     },
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "agents index.html file"
     }
   },
@@ -86,7 +74,7 @@
     "http-request": "GET /cgi-bin/getmenu?agent=<agent>",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "text/html",
       "content": "agents index.html file"
     }
   }

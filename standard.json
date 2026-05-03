@@ -6,7 +6,7 @@
     "http-request": "GET /cgi-bin/did",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "<did>"
     }
   },
@@ -17,7 +17,7 @@
     "http-request": "GET /cgi-bin/challenge",
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "<challenge>"
     }
   },
@@ -34,25 +34,25 @@
       {
         "context": "callers EC_PUBLIC_KEY was found and recognized okay",
         "status": "200 OK",
-        "contenttype": "text/plain",
+        "contenttype": "application/json",
         "content": "Hello <pubkey>"
       },
       {
         "context": "invalid challenge and/or bad response",
         "status": "400 Bad Request",
-        "contenttype": "text/plain",
+        "contenttype": "application/json",
         "content": "<message>"
       },
       {
         "context": "callers public key recognized, but banned",
         "status": "403 Forbidden",
-        "contenttype": "text/plain",
+        "contenttype": "application/json",
         "content": "<message>"
       },
       {
         "context": "callers public key is not registered",
         "status": "401 Unauthorized",
-        "contenttype": "text/plain",
+        "contenttype": "application/json",
         "content": "<message>"
       }
     ]
@@ -95,7 +95,7 @@
     ],
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "ACK"
     }
   },
@@ -129,7 +129,7 @@
     "red-result": null,
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "ACK"
     }
   }

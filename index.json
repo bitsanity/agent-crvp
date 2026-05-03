@@ -7,52 +7,314 @@
     "synchronous": true,
     "http-response": {
       "status": "200 OK",
-      "contenttype": "text/plain",
+      "contenttype": "application/json",
       "content": "<unixtimestamp>"
     }
   },
+
+
+
   {
-    "service": "weathercam",
-    "descrip": "get current weathercam pic with superimposed weather data graphics",
-    "fee": [
-      {
-        "amt": "100 sats",
-        "network": "Bitcoin"
-      },
-      {
-        "amt": "100 szabo",
-        "network": "Ethereum"
-      },
-      {
-        "amt": "0.2 USDT",
-        "network": "Ethereum"
-      }
-    ],
-    "synchronous": false,
+    "service": "orders",
+    "descrip":
+      "Any caller can fetch their Orders including ID and status",
     "authentication": true,
-    "red-request": {
-      "jsonrpc": "2.0",
-      "method": "weathercam",
-      "params": [
-        "<dir_in_degrees>"
-      ],
-      "id": {
-        "ref": "txnhash",
-        "network": "network"
+    "synchronous": true,
+    "fee": null,
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
       }
     },
-    "red-result": {
+    "red-request": {
       "jsonrpc": "2.0",
-      "result": {
-        "link": "ipfs://anipfshash",
-        "expires": "<unixtimestamp>",
-        "geoloc": "lat.nnn, long.nnn",
-        "dir": "<dir-in-degrees>"
-      },
-      "id": {
-        "ref": "txnhash",
-        "network": "network"
+      "method": "orders",
+      "params": [],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "[ {OrderA}, {OrderB},...]"
+    }
+  },
+
+  {
+    "service": "submit",
+    "descrip":
+      "Seller submits details to make a new escrow contract transaction",
+    "authentication": true,
+    "synchronous": true,
+    "fee": {
+      "amt": "0.002 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
       }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "submit",
+      "params": [
+        "<description>",
+        "<price>",
+        "<tokensca || 0 if ETH>",
+        "<bond>",
+        "<timeoutblocks>"
+      ],
+      "id": "<payment-txn-hash>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "buy",
+    "descrip":
+      "Buyer requests transaction to place payment and bond into escrow",
+    "authentication": true,
+    "synchronous": true,
+    "fee": {
+      "amt": "<price+bond+fee>",
+      "token": "0x-token-sca",
+      "tokenunits": "number-of-token-units",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "buy",
+      "params": [ "<OrderId>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "timeout",
+    "descrip":
+      "Buyer requests transaction to retrieve payment and bond from escrow",
+    "authentication": true,
+    "synchronous": true,
+    "fee": {
+      "amt": "0.001 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "timeout",
+      "params": [ "<OrderId>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "ship",
+    "descrip":
+      "Seller requests transaction to update contract with tracking reference",
+    "authentication": true,
+    "synchronous": true,
+    "fee": {
+      "amt": "0.001 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "ship",
+      "params": [ "<OrderId>", "<tracking-reference>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "confirm",
+    "descrip":
+      "Buyer acknowedges receipt and requests transaction to retrieve bond",
+    "authentication": true,
+    "synchronous": false,
+    "fee": {
+      "amt": "0.001 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "confirm",
+      "params": [ "<OrderId>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "note",
+    "descrip":
+      "Party requests transaction to place a note on the contract",
+    "authentication": true,
+    "synchronous": false,
+    "fee": {
+      "amt": "0.001 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "note",
+      "params": [ "<OrderId>", "<plaintextnote>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
+    }
+  },
+
+  {
+    "service": "arbitration",
+    "descrip":
+      "Buyer requests refund at seller's expense, shipment failed",
+    "authentication": true,
+    "synchronous": false,
+    "fee": {
+      "amt": "0.001 ether",
+      "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
+      "network": "Ethereum"
+    },
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "arbitration",
+      "params": [ "<OrderId>", "<plaintextreason>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "ACK"
+    },
+    "http-response": {
+      "status": "402 Payment Required",
+      "contenttype": "application/json",
+      "content": "<fee-object>"
     }
   }
+
 ]
