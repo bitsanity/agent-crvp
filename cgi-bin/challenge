@@ -11,7 +11,7 @@ try {
   let result = {
     jsonrpc: "2.0",
     result: {
-      adilos_challenge: sess.chB64
+      challenge: sess.chB64
     },
     id: 0
   }

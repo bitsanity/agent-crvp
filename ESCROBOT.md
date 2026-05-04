@@ -1,6 +1,6 @@
 ## Agent Escrow Service Exposed via CARP
 
-escrobot exposes paid escrow services through our CARP interface.
+escrobot is a set of services available through our CARP interface that provide an escrow capability for clients exchanging Ether or ERC20 tokens and shipping goods with trackable references.
 
 ## References
 
@@ -18,13 +18,24 @@ escrobot exposes paid escrow services through our CARP interface.
 
 ## Usage
 
+The x402 payment approach:
+
 * A client usually doesnt know the fees in advance, so simply calls for service and provides the required parameters.
 * This interface calculates the fee and returns a 402 Payment Required response with payment instructions.
 * Client makes the payment transaction as instructed and records the txn hash.
 * Client repeats the request including the payment txn hash as a cookie.
-* Interface checks payment, records the request, simply returns an ACK.
-* Agent later gets next request and processes it.
-* Client later calls `orders` service for a list of their Orders including Order ID and status. Usually the only/last Order will be the one SUBMITTED.
+
+If paying with ERC20 tokens:
+
+* Please use the approve() mechanism and include the hash for this transaction as the cookie in the request for service.
+* Please do not use transfer() - let us do the transferFrom() instead.
+
+Other considerations:
+
+* Please wait for the payment transaction to mine before calling for service.
+* Please send from the address of the EC public key registered with us.
+* Please send ether or approve tokens for this agent's address derived from our public key.
+* We cant handle split payments so please dont underpay.
 
 ## Escrobot Services
 
