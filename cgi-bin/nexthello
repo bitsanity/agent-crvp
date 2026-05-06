@@ -6,7 +6,7 @@
 const sessions = require( './sessions.js' )
 const admin = require( './admin.js' )
 
-if (! admin.isWithinLAN() ) {
+if (! admin.fromWithinLAN() ) {
   admin.respondHttp( 401, "local only" )
 }
 
@@ -14,14 +14,19 @@ if ( process.env.REQUEST_METHOD !== 'GET' ) {
   admin.respondHttp( 405, "Please use GET" )
 }
 
-let sess = sessions.oldestValid()
+try {
+  let sess = sessions.oldestValid()
 
-if (!sess)
-  admin.respondHttp( 200, "none found" )
+  if (!sess) {
+    admin.respondHttp( 200, '"none"' )
+  }
 
-sessions.responded( sess.chB64, sess.clientpubkeyhex )
+  let result = {
+    pubkey: sess.clientpubkeyhex,
+    responded: sess.responded
+  }
 
-admin.respondHttp( 200,
-  // TODO include handle
-  "pubkey=" + sess.clientpubkeyhex + " " + 
-  "responded=" + sess.responded )
+  admin.respondHttp( 200, JSON.stringify(result) )
+} catch( e ) {
+  admin.respondHttp( 500, e.toString() )
+}

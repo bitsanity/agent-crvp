@@ -16,7 +16,7 @@ try {
     id: 0
   }
 
-  admin.respondHttp( 200, result )
+  admin.respondHttp( 200, JSON.stringify(result) )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )

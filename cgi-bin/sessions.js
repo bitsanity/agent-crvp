@@ -9,6 +9,8 @@ const DIR = './sessions/'
 
 // Base64 encoding is not filename-friendly so we hash it to hex
 function toFilename( chB64 ) {
+  console.log( 'toFilename: ' + chB64 )
+
   let hash = crypto.createHash('sha256')
   hash.update( chB64 )
   let fname = hash.digest('hex')
@@ -56,8 +58,14 @@ exports.newSession = function() {
 
 exports.responded = function( challB64, pubkeyhex ) {
   let sess = exports.getSession( challB64 )
+
   sess.responded = Date.now()
-  sess.clientpubkeyhex = pubkeyhex
+
+  let pubkeyshort =
+    secp256k1.publicKeyConvert( Buffer.from(pubkeyhex,'hex'), true )
+
+  let pubkeybuff = Buffer.from( pubkeyshort )
+  sess.clientpubkeyhex = pubkeybuff.toString('hex')
 
   writeSession( challB64, sess )
 }
@@ -69,7 +77,7 @@ exports.oldestValid = function() {
     fs.readdirSync( DIR )
     .map(name => ({
       name,
-      time: fs.statSync(path.join(dir, name)).mtime.getTime()
+      time: fs.statSync(path.join(DIR, name)).mtime.getTime()
     }))
     .sort((a, b) => a.time - b.time) // oldest first
     .map(f => f.name);
@@ -79,11 +87,14 @@ exports.oldestValid = function() {
   let result = null
 
   for (const f of files) {
-    let contents = exports.getSession( f )
-    if (contents.responsed && contents.clientpubkeyhex) {
-      result = contents
+    let fp = DIR + '/' + f
+    let rec = JSON.parse( fs.readFileSync(fp, 'utf-8' ) )
+
+    if (rec.responded && rec.clientpubkeyhex) {
+      result = rec
       delete result.privhex
       delete result.pubhex
+      fs.unlinkSync( fp )
       break
     }
   }
