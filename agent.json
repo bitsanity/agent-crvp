@@ -71,7 +71,7 @@
     "service": "getmenu",
     "descrip": "retrieve another agent's menu of services",
     "synchronous": true,
-    "http-request": "GET /cgi-bin/getmenu?agent=<agent>",
+    "http-request": "GET /cgi-bin/getmenu?agent=<pubkey>",
     "http-response": {
       "status": "200 OK",
       "contenttype": "text/html",

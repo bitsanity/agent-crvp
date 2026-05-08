@@ -7,7 +7,7 @@ async function getMenu( url ) {
     const response = await fetch( url )
     if (!response.ok) throw 'no response'
 
-    let contents = await response.text()
+    let contents = await response.json()
     if (!contents || contents.length == 0)
       throw 'no contents'
 
@@ -32,7 +32,7 @@ if (!parms.agent)
   admin.respondHttp( 400, "missing agent-pubkey param" )
 
 // TODO - look up other agent by pubkey
-let url = 'http://' + '127.0.0.1:9000' + '/index.html';
+let url = 'http://' + '127.0.0.1:8888' + '/index.json';
 
 (async () => {
   const result = await getMenu( url )

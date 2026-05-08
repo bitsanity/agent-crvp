@@ -14,7 +14,7 @@ try {
     socmed: ["clawlinked.in","moltbook.com"]
   }
 
-  admin.respondHttp( 200, JSON.stringify(did) )
+  admin.respondHttp( 200, did )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )

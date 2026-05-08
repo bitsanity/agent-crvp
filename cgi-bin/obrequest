@@ -3,12 +3,13 @@
 // called locally by our agent when it has a request to make of another agent
 
 const ecjson = require( 'ecjsonrpc' )
+const env = require( './env.js' )
 const admin = require( './admin.js' )
 const requests = require( './requests.js' )
 
 async function handlePost( topubkey, reqobj ) {
 
-  let privkeyhex = process.env.AGENT_PRIVKEYHEX
+  let privkeyhex = env.VARS.AGENT_PRIVKEYHEX
   if (!privkeyhex) {
     admin.respondHttp( 503, "key maintenance required" )
   }

@@ -18,4 +18,4 @@ let it = answers.dequeue()
 if (!it)
   admin.respondHttp( 200, "none found" )
 
-admin.respondHttp( 200, JSON.stringify(it) )
+admin.respondHttp( 200, it )

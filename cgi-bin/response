@@ -86,7 +86,7 @@ process.stdin.on( 'data', data => {
     let hello = {
       ack: pubkeyhex
     }
-    admin.respondHttp( 200, JSON.stringify(hello) )
+    admin.respondHttp( 200, hello )
   }
   catch( ex ) {
     admin.respondHttp( 500, ex.toString() )

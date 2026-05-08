@@ -18,12 +18,15 @@ function toFilename( pubkeyhex ) {
 
 // returns JSON array
 function readFile( pubkeyhex ) {
+  let result = null
   try {
     let fname = toFilename( pubkeyhex )
-    return JSON.parse( fs.readFileSync(fname, 'utf-8') )
+    if (fs.existsSync(fname))
+      result = JSON.parse( fs.readFileSync(fname, 'utf-8') )
   }
-  catch (e) { }
-  return null
+  catch (e) {}
+
+  return result
 }
 
 function writeFile( pubkeyhex, dataobj ) {
@@ -61,7 +64,9 @@ function replace( pubkeyhex, cookie, obj ) {
 }
 
 exports.get = function( pubkeyhex, cookie ) {
+
   let records = readFile( pubkeyhex )
+
   if (!records || records.length == 0) return null
 
   let cookiestr = isString(cookie)
@@ -70,12 +75,15 @@ exports.get = function( pubkeyhex, cookie ) {
 
   for( let ii = 0; ii < records.length; ii++ ) {
     let rec = records[ii]
-
-    if (    rec.redreq
-         && rec.redreq.id
-         && rec.redreq.id === cookiestr ) {
-      return rec
+    if (cookiestr) {
+      if (    rec.redreq
+           && rec.redreq.id
+           && rec.redreq.id === cookiestr ) {
+        return rec
+      }
     }
+    else
+      return rec
   }
 
   return null
@@ -118,7 +126,7 @@ exports.oldestPending = function() {
     fs.readdirSync( DIR )
     .map(name => ({
       name,
-      time: fs.statSync(path.join(dir, name)).mtime.getTime()
+      time: fs.statSync(path.join(DIR, name)).mtime.getTime()
     }))
     .sort((a, b) => a.time - b.time) // oldest first
     .map(f => f.name);
@@ -129,7 +137,7 @@ exports.oldestPending = function() {
 
   for (const f of files) {
     let contents = exports.get( f )
-    if (!contents.completed) {
+    if (contents && !contents.completed) {
       result = contents
       break
     }

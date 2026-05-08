@@ -15,9 +15,8 @@
 
 
   {
-    "service": "orders",
-    "descrip":
-      "Any caller can fetch their Orders including ID and status",
+    "service": "myorders",
+    "descrip": "A caller can fetch a list of their Order IDs",
     "authentication": true,
     "synchronous": true,
     "fee": null,
@@ -32,14 +31,42 @@
     },
     "red-request": {
       "jsonrpc": "2.0",
-      "method": "orders",
+      "method": "myorders",
       "params": [],
       "id": "<cookie>"
     },
     "http-response": {
       "status": "200 OK",
       "contenttype": "application/json",
-      "content": "[ {OrderA}, {OrderB},...]"
+      "content": "[ OrderIDa, OrderIDb, ... ]"
+    }
+  },
+
+  {
+    "service": "getorder",
+    "descrip": "A caller can fetch the details of a given Order ID",
+    "authentication": true,
+    "synchronous": true,
+    "fee": null,
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "getorder",
+      "params": [ "<orderidhexstring>" ],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "contenttype": "application/json",
+      "content": "{Order}"
     }
   },
 
@@ -286,7 +313,7 @@
     "authentication": true,
     "synchronous": false,
     "fee": {
-      "amt": "0.001 ether",
+      "amt": "0.005 ether",
       "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
       "network": "Ethereum"
     },

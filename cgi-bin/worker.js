@@ -1,3 +1,4 @@
+const env = require( './env.js' )
 const session = require( './sessions.js' )
 const ecjson = require( 'ecjsonrpc' )
 const requests = require( './requests.js' )
@@ -9,7 +10,7 @@ const escrobot = require( './escrobot.js' )
 
 const SERVICES = {
   "timenow" : true,
-  "orders" : true,
+  "myorders" : true,
   "submit" : true,
   "buy" : true,
   "timeout" : true,
@@ -32,7 +33,8 @@ function screen( pubkeyhex ) {
 }
 
 function toRedObj( blkobj ) {
-  let privkeyhex = process.env.AGENT_PRIVKEYHEX
+  let privkeyhex = env.VARS.AGENT_PRIVKEYHEX
+  if (!privkeyhex) admin.respondHttp( 500, "config: agent key" )
 
   let redobj = ecjson.blackToRed( privkeyhex, blkobj )
   if (!redobj) {
@@ -42,7 +44,7 @@ function toRedObj( blkobj ) {
   return redobj
 }
 
-async function processRequest( paramobj ) {
+exports.processRequest = async function ( paramobj ) {
 
   let redobj
 
@@ -57,9 +59,29 @@ async function processRequest( paramobj ) {
   if (!SERVICES[redobj.method])
     admin.responseHttp( 400, "method is not a recognized service" )
 
+  if (redobj.method === 'myorders') {
+    try {
+      let ords = await escrobot.myorders( paramobj.spkhex )
+      admin.respondHttp( 200, ords )
+    }
+    catch( e ) {
+      admin.respondHttp( 500, e.toString() )
+    }
+  }
+
+  if (redobj.method === 'getorder') {
+    try {
+      let ord = await escrobot.getorder( redobj.params[0] )
+      admin.respondHttp( 200, ord )
+    }
+    catch( e ) {
+      admin.respondHttp( 500, e.toString() )
+    }
+  }
+
   let feeObj = fees.agentFee( redobj.method )
 
-  if (feeObj.amt) {
+  if (feeObj && feeObj.amt) {
 
     if (redobj.method === 'buy') {
       if (    !redobj.params
@@ -82,7 +104,7 @@ async function processRequest( paramobj ) {
     }
 
     let cookie = redobj.id
-    if (!cookie) admin.responseHttp( 402, JSON.stringify(feeObj) )
+    if (!cookie) admin.responseHttp( 402, feeObj )
 
     let etxn = fees.getEthereumTxn( cookie )
     if (!etxn) admin.responseHttp( 400, "didnt find that txnhash" )
@@ -134,26 +156,22 @@ function processAnswer( blkobj ) {
 
 module.exports.dorequest = function() {
 
-  // systems check steps
+  // systems check
 
-  if (!process.env.AGENT_PRIVKEYHEX)
-    admin.respondHttp( 503, "agent config key missing" )
-
-  if (!process.env.AGENT_ETH_ADDRESS)
-    admin.respondHttp( 503, "agent eth address missing" )
-
-  if (!process.env.ETHERSCAN_API_KEY)
-    admin.respondHttp( 503, "etherscan api key missing" )
+  if (    !env.VARS.AGENT_PRIVKEYHEX
+       || !env.VARS.AGENT_ETH_ADDRESS
+       || !env.VARS.ETHERSCAN_API_KEY )
+    admin.respondHttp( 503, "config missing" )
 
   // all encrequests are POST only
 
   if (process.env.REQUEST_METHOD !== 'POST') {
-      admin.responseHttp( 405, "POST only" )
+    admin.responseHttp( 405, "POST only" )
   }
 
   process.stdin.on( 'data', data => {
     let body = JSON.parse( data.toString() )
-    processRequest( body )
+    exports.processRequest( body )
   } )
 
 }

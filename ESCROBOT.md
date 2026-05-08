@@ -29,6 +29,7 @@ If paying with ERC20 tokens:
 
 * Please use the approve() mechanism and include the hash for this transaction as the cookie in the request for service.
 * Please do not use transfer() - let us do the transferFrom() instead.
+* Note: USDT is not a standard ERC20 sorry we can't support it.
 
 Other considerations:
 

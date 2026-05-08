@@ -2,7 +2,7 @@
 
 // retrieve the oldest incoming request to which we havent responded yet
 
-const sessions = require( './requests.js' )
+const requests = require( './requests.js' )
 const admin = require( './admin.js' )
 
 if (! admin.fromWithinLAN() ) {
@@ -16,11 +16,13 @@ if ( process.env.REQUEST_METHOD !== 'GET' ) {
 let it = requests.oldestPending()
 
 if (!it)
-  admin.respondHttp( 200, "none found" )
+  admin.respondHttp( 200, [] )
 
-let data = 'service=' + it.redreq.method + ' ' +
-           'params=' + JSON.stringify(it.redreq.params) + ' ' +
-           'agent=' + it.clientpubkeyhex + ' ' +
-           'cookie=' + it.redreq.id
+let data = {
+  method: it.redreq.method,
+  params: it.redreq.params,
+  client: it.clientpubkeyhex,
+  cookie: it.redreq.id
+}
 
 admin.respondHttp( 200, data )

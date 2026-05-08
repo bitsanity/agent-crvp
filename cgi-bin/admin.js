@@ -18,8 +18,14 @@ const LOCAL_IP_REGEX = /^(?:10\.|127\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.|1
 
 module.exports.respondHttp = function( statcode, content ) {
   console.log( "HTTP/1.1 " + statcode + " " + HTTPRESPONSES[statcode] )
-  console.log( "Content-Type: application/json\n" )
-  console.log( content )
+  if (typeof content === 'string' || content instanceof String) {
+    console.log( "Content-Type: text/plain\n" )
+    console.log( content )
+  }
+  else {
+    console.log( "Content-Type: application/json\n" )
+    console.log( JSON.stringify(content) )
+  }
   process.exit( 0 )
 }
 

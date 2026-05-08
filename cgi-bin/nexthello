@@ -18,7 +18,7 @@ try {
   let sess = sessions.oldestValid()
 
   if (!sess) {
-    admin.respondHttp( 200, '"none"' )
+    admin.respondHttp( 200, [] )
   }
 
   let result = {
@@ -26,7 +26,7 @@ try {
     responded: sess.responded
   }
 
-  admin.respondHttp( 200, JSON.stringify(result) )
+  admin.respondHttp( 200, result )
 } catch( e ) {
   admin.respondHttp( 500, e.toString() )
 }
