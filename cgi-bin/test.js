@@ -103,6 +103,27 @@ async function asyncmain() {
   // core business stuff
   //
 
+  let redsubreq = {
+    jsonrpc: "2.0",
+    method: "submit",
+    params: [
+      "left-handed-widget", // description
+      "1000000000000000",   // price
+      "0",                  // ETH
+      "1000000000000000",   // bond
+      "1000"                // timeoutblocks
+    ],
+    "id": "<0xtrustmebro>"
+  }
+
+  let blksubreq =
+    ecjson.redToBlack( TESTKEY.prv, env.VARS.AGENT_PUBKEY, redsubreq )
+
+  worker.processRequest( blksubreq )
+
+  let blksubrsp =
+    await POST( TESTURL + '/cgi-bin/encrequest', NULLHEAD, blksubreq )
+
   // playing the agent now
 
   let nextrequest =

@@ -23,17 +23,12 @@ async function handlePost( topubkey, reqobj ) {
   try {
     let blkreq = ecjson.redToBlack( privkeyhex, topubkey, reqobj )
 
-//  let rsp = await fetch( 'http://' + url + '/cgibin/encrequest', {
-//    method: "POST",
-//    body: JSON.stringify(blkreq)
-//  } )
-//
-//  let res = await rsp.text()
-
-    let res = "test result"
-
-    // TODO should we record outgoing requests and offer our agent an admin
-    //      service to look up pending outgoing requests?
+    let rsp = await fetch( 'http://' + url + '/cgibin/encrequest', {
+      method: "POST",
+      body: JSON.stringify(blkreq)
+    } )
+  
+    let res = await rsp.text()
 
     admin.respondHttp( 200, res )
   }

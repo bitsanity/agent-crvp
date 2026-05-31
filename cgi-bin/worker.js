@@ -53,11 +53,11 @@ exports.processRequest = async function ( paramobj ) {
     redobj = toRedObj( paramobj )
   }
   else {
-    admin.responseHttp( 401, "body is missing authentication" )
+    admin.respondHttp( 401, "body is missing authentication" )
   }
 
   if (!SERVICES[redobj.method])
-    admin.responseHttp( 400, "method is not a recognized service" )
+    admin.respondHttp( 400, "method is not a recognized service" )
 
   if (redobj.method === 'myorders') {
     try {
@@ -104,23 +104,30 @@ exports.processRequest = async function ( paramobj ) {
     }
 
     let cookie = redobj.id
-    if (!cookie) admin.responseHttp( 402, feeObj )
+    if (!cookie) admin.respondHttp( 402, feeObj )
 
-    let etxn = fees.getEthereumTxn( cookie )
-    if (!etxn) admin.responseHttp( 400, "didnt find that txnhash" )
+    try {
+      let etxn = fees.getEthereumTxn( cookie )
 
-    if ( !fees.isFrom(etxn, paramobj.spkhex) )
-      admin.responseHttp( 400, "payment must be from caller" )
+      if (!etxn || !etxn.from)
+        admin.respondHttp( 400, "didnt find that txnhash" )
 
-    if ( !fees.isMined(etxn) ) admin.responseHttp( 102, "awaiting mining" )
+      if ( !fees.isFrom(etxn, paramobj.spkhex) )
+        admin.respondHttp( 400, "payment must be from caller" )
 
-    if ( !fees.isUsed(cookie) )
-      admin.responseHttp( 400, "payment already serviced" )
+      if ( !fees.isMined(etxn) ) admin.respondHttp( 102, "awaiting mining" )
 
-    let checks = fees.checkSufficient( etxn, feeObj )
-    if ( checks != null ) admin.responseHttp( 400, checks )
+      if ( !fees.isUsed(cookie) )
+        admin.respondHttp( 400, "payment already serviced" )
 
-    fees.setUsed( cookie )
+      let checks = fees.checkSufficient( etxn, feeObj )
+      if ( checks != null ) admin.respondHttp( 400, checks )
+
+      fees.setUsed( cookie )
+    }
+    catch( ex ) {
+      admin.respondHttp( 500, ex.toString() )
+    }
 
   } // end if fee required
 
@@ -166,7 +173,7 @@ module.exports.dorequest = function() {
   // all encrequests are POST only
 
   if (process.env.REQUEST_METHOD !== 'POST') {
-    admin.responseHttp( 405, "POST only" )
+    admin.respondHttp( 405, "POST only" )
   }
 
   process.stdin.on( 'data', data => {
@@ -182,7 +189,7 @@ module.exports.doresult = function() {
 
   // all encresults are POST 
   if (process.env.REQUEST_METHOD !== 'POST') {
-      admin.responseHttp( 405, "POST only" )
+      admin.respondHttp( 405, "POST only" )
   }
 
   process.stdin.on( 'data', data => {
