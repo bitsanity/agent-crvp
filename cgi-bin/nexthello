@@ -7,7 +7,7 @@ const sessions = require( './sessions.js' )
 const admin = require( './admin.js' )
 
 if (! admin.fromWithinLAN() ) {
-  admin.respondHttp( 401, "local only" )
+  admin.respondHttp( 401, "local only: " + process.env.REMOTE_ADDR )
 }
 
 if ( process.env.REQUEST_METHOD !== 'GET' ) {
