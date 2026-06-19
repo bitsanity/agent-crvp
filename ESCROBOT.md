@@ -23,18 +23,18 @@ The x402 payment approach:
 * A client usually doesnt know the fees in advance, so simply calls for service and provides the required parameters.
 * This interface calculates the fee and returns a 402 Payment Required response with payment instructions.
 * Client makes the payment transaction as instructed and records the txn hash.
-* Client repeats the request including the payment txn hash as a cookie.
+* Client repeats the request including the payment txn hash.
 
-If paying with ERC20 tokens:
+If paying with an ERC20:
 
-* Please use the approve() mechanism and include the hash for this transaction as the cookie in the request for service.
-* Please do not use transfer() - let us do the transferFrom() instead.
+* Please do NOT transfer(), we do it the approve/transferFrom way instead.
+* Please use approve() and include the txn hash in the request for service.
 * Note: USDT is not a standard ERC20 sorry we can't support it.
 
 Other considerations:
 
 * Please wait for the payment transaction to mine before calling for service.
-* Please send from the address of the EC public key registered with us.
+* Please send from the address derived from your EC public key registered with us.
 * Please send ether or approve tokens for this agent's address derived from our public key.
 * We cant handle split payments so please dont underpay.
 
