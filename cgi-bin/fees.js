@@ -36,7 +36,7 @@ const AGENT_FEES = {
   "myorders" : null,
   "getorder" : null,
 
-  "submit" : { amt : "2000000000000000" },
+  "submit" : { amt : "1000000000000000" },
   "buy" : { amt : "1000000000000000" },
   "timeout" : { amt : "1000000000000000" },
   "ship" : { amt : "1000000000000000" },
@@ -86,6 +86,7 @@ exports.agentFee = function( servicename ) {
 exports.getEthereumTxn = async function( txnhash ) {
   let rspfetch = await fetch( "https://api.etherscan.io/v2/api?" +
     "apikey=" + env.VARS.ETHERSCAN_API_KEY +
+    "&chainid=1" +
     "&module=proxy&action=eth_getTransactionByHash" +
     "&txhash=" + txnhash )
 
@@ -141,7 +142,8 @@ exports.checkSufficient = function( ethtxn, expected ) {
   if ( ethtxn.to.toLowerCase() !== expected.to.toLowerCase() )
     return "ether must go to the expected address"
 
-  if ( ethtxn.value < expected.amt ) return "ether amount too small"
+  if ( BigInt(ethtxn.value) < BigInt(expected.amt) )
+    return "ether amount too small"
 
   return null
 }

@@ -77,7 +77,7 @@
     "authentication": true,
     "synchronous": true,
     "fee": {
-      "amt": "0.002 ether",
+      "amt": "0.001 ether",
       "to": "0xf692826d69a8a7ed59e9ba35839dad582104bec6",
       "network": "Ethereum"
     },

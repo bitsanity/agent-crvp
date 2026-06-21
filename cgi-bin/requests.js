@@ -31,7 +31,10 @@ function readFile( pubkeyhex ) {
 
 function writeFile( pubkeyhex, dataobj ) {
   let fname = toFilename( pubkeyhex )
-  fs.writeFileSync( fname, JSON.stringify(dataobj), { encoding:'utf-8' } )
+  fs.writeFileSync(
+    fname, JSON.stringify(dataobj) + '\n',
+    { encoding:'utf-8' }
+  )
 }
 
 function newFile( pubkeyhex ) {

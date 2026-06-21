@@ -107,7 +107,7 @@ exports.processRequest = async function ( paramobj ) {
     if (!cookie) admin.respondHttp( 402, feeObj )
 
     try {
-      let etxn = fees.getEthereumTxn( cookie )
+      let etxn = await fees.getEthereumTxn( cookie )
 
       if (!etxn || !etxn.from)
         admin.respondHttp( 400, "didnt find that txnhash" )
@@ -117,7 +117,7 @@ exports.processRequest = async function ( paramobj ) {
 
       if ( !fees.isMined(etxn) ) admin.respondHttp( 102, "awaiting mining" )
 
-      if ( !fees.isUsed(cookie) )
+      if ( fees.isUsed(cookie) )
         admin.respondHttp( 400, "payment already serviced" )
 
       let checks = fees.checkSufficient( etxn, feeObj )

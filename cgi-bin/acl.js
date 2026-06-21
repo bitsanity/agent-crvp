@@ -6,7 +6,7 @@ function toFilename( pubkeyhex ) {
 
 function writeRecord( pubkeyhex, data ) {
   let fname = toFilename( pubkeyhex )
-  fs.writeFileSync( fname, JSON.stringify(data), { encoding:'utf-8' } )
+  fs.writeFileSync( fname, JSON.stringify(data) + '\n', { encoding:'utf-8' } )
 }
 
 exports.getRecord = function( pubkeyhex ) {
