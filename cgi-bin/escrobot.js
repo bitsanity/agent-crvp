@@ -2,17 +2,22 @@ const { ethers } = require( 'ethers' )
 const env = require( './env.js' )
 
 exports.getorder = async function( orderidbytes32hex ) {
-  let fres = await fetch(
-    "https://api.etherscan.io/v2/api?" +
-    "apikey=" + env.VARS.ETHERSCAN_API_KEY +
-    "&chainid=1" +
-    "&module=proxy" +
-    "&action=eth_call" +
-    "&to=" + env.VARS.ESCROBOT_SCA +
-    "&data=0x9c3f1e90" + orderidbytes32hex )
+  if (orderidbytes32hex.startsWith('0x'))
+    orderidbytes32hex = orderidbytes32hex.substring(2)
 
+  console.log( 'getorder: ' + orderidbytes32hex )
+
+    let urlstr =
+      "https://api.etherscan.io/v2/api?" +
+      "apikey=" + env.VARS.ETHERSCAN_API_KEY +
+      "&chainid=1" +
+      "&module=proxy" +
+      "&action=eth_call" +
+      "&to=" + env.VARS.ESCROBOT_SCA +
+      "&data=0x9c3f1e90" + orderidbytes32hex
+
+  let fres = await fetch( urlstr )
   let jres = await fres.json()
-
   return jres.result
 }
 

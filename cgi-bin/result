@@ -11,6 +11,8 @@ const requests = require( './requests.js' )
 function handlePost( topubkey, cookie, replyobj ) {
 
   // TODO - look up URL for given pubkey from social media
+  let url = '127.0.0.1:8888' // for test, send our own result back to us
+
   let shortpub =
     secp256k1.publicKeyConvert( Buffer.from(topubkey,'hex'), true )
 
@@ -26,8 +28,6 @@ function handlePost( topubkey, cookie, replyobj ) {
   }
 
   let blkresp = ecjson.redToBlack( privkeyhex, shortpub, redreslt )
-
-  let url = '127.0.0.1:8888' // for test, send our own result back to us
 
   fetch( 'http://' + url + '/cgibin/encresult', {
     method: "POST",

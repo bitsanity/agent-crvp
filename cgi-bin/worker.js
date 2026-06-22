@@ -84,14 +84,12 @@ exports.processRequest = async function ( paramobj ) {
   if (feeObj && feeObj.amt) {
 
     if (redobj.method === 'buy') {
-      if (    !redobj.params
-           || redobj.params.length != 1
-           || redobj.params[0]
-           || /^0x[0-9a-fA-F]{64}$/.test( redobj.params[0] )
-         )
+      let orderid = "" + redobj.params[0]
+
+      if (! /^0x[0-9a-fA-F]{64}$/.test(orderid))
         admin.respondHttp( 400, "orderId param is missing or misformatted" )
 
-      let order = await escrobot.orders( redobj.parms[0] )
+      let order = await escrobot.getorder( orderid )
       if (!order) admin.respondHttp( 400, "orderId unrecognized" )
 
       if (order.token == 0) {
