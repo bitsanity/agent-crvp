@@ -1,0 +1,33 @@
+#!/usr/bin/node
+
+const acl = require( './acl.js' )
+const admin = require( './admin.js' )
+
+function doIt( body ) {
+  try {
+    acl.addDID( body )
+  }
+  catch( e ) {
+    admin.respondHttp( 400, e.toString() )
+  }
+
+  admin.respondHttp( 200, "OK" )
+}
+
+try {
+  if (process.env.REQUEST_METHOD !== 'PUT') throw 'PUT only'
+
+  if (!admin.fromWithinLAN()) {
+    admin.respondHttp( 401, "inside LAN only" );
+  }
+
+  process.stdin.on( 'data', data => {
+    let body = JSON.parse( data.toString() )
+    doIt( body )
+  } )
+
+}
+catch( ex ) {
+  admin.respondHttp( 500, ex.toString() )
+}
+

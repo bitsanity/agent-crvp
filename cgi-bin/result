@@ -6,15 +6,16 @@ const secp256k1 = require( 'secp256k1' )
 const ecjson = require( 'ecjsonrpc' )
 const env = require( './env.js' )
 const admin = require( './admin.js' )
+const acl = require( './acl.js' )
 const requests = require( './requests.js' )
 
 function handlePost( topubkey, cookie, replyobj ) {
 
-  // TODO - look up URL for given pubkey from social media
-  let url = '127.0.0.1:8888' // for test, send our own result back to us
-
   let shortpub =
     secp256k1.publicKeyConvert( Buffer.from(topubkey,'hex'), true )
+
+  let url = acl.pubkeyToHostPort( shortpub )
+  if (!url) admin.respondHttp( 500, "unknown other party, no DID" )
 
   let privkeyhex = env.VARS.AGENT_PRIVKEYHEX
   if (!privkeyhex) {

@@ -27,6 +27,20 @@ exports.newEntry = function( pubkeyhex ) {
   return data
 }
 
+exports.addDID = function( didobj ) {
+  let rec = exports.getRecord( didobj.pubkeyhex )
+  rec.did = didobj
+  writeRecord( didobj.pubkeyhex, rec )
+}
+
+exports.pubkeyToHostPort = function( pubkeyhex ) {
+  let rec = exports.getRecord( pubkeyhex )
+  if (rec && rec.did)
+    return rec.did.url
+
+  return null
+}
+
 exports.ban = function( pubkeyhex, reason ) {
   let it = exports.getRecord( pubkeyhex )
   it.bannedDate = Date.now()

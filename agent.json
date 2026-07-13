@@ -10,6 +10,22 @@
       "content": "{red-jsonrpc-obj}"
     }
   },
+
+  {
+    "service": "adddid",
+    "descrip": "add another agent's DID to its ACL record",
+    "synchronous": true,
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/adddid",
+      "body": "<didobj>"
+    },
+    "http-response": {
+      "status": "200",
+      "content": "OK"
+    }
+  },
+
   {
     "service": "nextrequest",
     "descrip": "retrieve the next incoming request waiting for our service",

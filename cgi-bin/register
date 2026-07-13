@@ -1,6 +1,6 @@
 #!/usr/bin/node
 
-// register this agent's Decentralized Identifier (DID) somewhere
+// register this agent's Decentralized Identifier (DID) on agent social media
 //
 //  let did = {
 //    handle: "myagent",
@@ -25,6 +25,8 @@ function doit( did ) {
   }
 
   // TODO register this did somewhere
+
+  admin.respondHttp( 500, "missing somewhere to register" )
 }
 
 

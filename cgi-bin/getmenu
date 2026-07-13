@@ -1,6 +1,7 @@
 #!/usr/bin/node
 
 const admin = require( './admin.js' )
+const acl = require( './acl.js' )
 
 async function getMenu( url ) {
   try {
@@ -29,10 +30,12 @@ if ( process.env.REQUEST_METHOD !== 'GET' ) {
 let parms = admin.parseGetParams( process.env.QUERY_STRING )
 
 if (!parms.agent)
-  admin.respondHttp( 400, "missing agent-pubkey param" )
+  admin.respondHttp( 400, "missing agent pubkey param" )
 
-// TODO - look up other agent by pubkey
-let url = 'http://' + '127.0.0.1:8888' + '/index.json';
+let hostport = acl.pubkeyToHostPort( parms.agent )
+if (!hostport) admin.respondHttp( 400, "no DID yet" )
+
+let url = 'http://' + hostport + '/index.json';
 
 (async () => {
   const result = await getMenu( url )

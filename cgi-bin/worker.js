@@ -10,6 +10,7 @@ const escrobot = require( './escrobot.js' )
 
 const SERVICES = {
   "timenow" : true,
+  "encrypted-async-time-now" : true,
   "myorders" : true,
   "submit" : true,
   "buy" : true,

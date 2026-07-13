@@ -6,6 +6,7 @@ const ecjson = require( 'ecjsonrpc' )
 const env = require( './env.js' )
 const admin = require( './admin.js' )
 const requests = require( './requests.js' )
+const acl = require( './acl.js' )
 
 async function handlePost( topubkey, reqobj ) {
 
@@ -14,11 +15,10 @@ async function handlePost( topubkey, reqobj ) {
     admin.respondHttp( 503, "key maintenance required" )
   }
 
-  // TODO look up other agent's url by pubkey from social media
-  let url = "1.2.3.4:8888"
-
-  if (!url || url.length == 0)
+  let hostport = acl.pubkeyToHostPort( topubkey )
+  if (!hostport) {
     admin.respondHttp( 400, "url not located" )
+  }
 
   try {
     let blkreq = ecjson.redToBlack( privkeyhex, topubkey, reqobj )

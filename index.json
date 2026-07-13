@@ -12,6 +12,32 @@
     }
   },
 
+  {
+    "service": "encrypted-async-timenow",
+    "descrip": "Get the current time from this server enc/async ping test",
+    "authentication": true,
+    "synchronous": false,
+    "fee": null,
+    "http-request": {
+      "method": "POST",
+      "url": "/cgi-bin/encrequest",
+      "body": {
+        "msghex": "<encrypted-message-containing-request>",
+        "sighex": "<ecdsa-signature-of-message>",
+        "spkhex": "<signers-EC-public-key>"
+      }
+    },
+    "red-request": {
+      "jsonrpc": "2.0",
+      "method": "encrypted-async-timenow",
+      "params": [],
+      "id": "<cookie>"
+    },
+    "http-response": {
+      "status": "200 OK",
+      "content": "ACK"
+    }
+  },
 
 
   {
