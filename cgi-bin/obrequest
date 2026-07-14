@@ -1,4 +1,5 @@
 #!/usr/bin/node
+process.chdir(__dirname)
 
 // called locally by our agent when it has a request to make of another agent
 

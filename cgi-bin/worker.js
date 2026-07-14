@@ -155,6 +155,7 @@ exports.processRequest = async function ( paramobj ) {
 
 function processAnswer( blkobj ) {
   try {
+    screen( blkobj.spkhex )
     let redobj = toRedObj( blkobj )
     redobj.sender = blkobj.spkhex
 
