@@ -38,15 +38,16 @@ exports.dequeue = function() {
     fs.readdirSync( DIR )
     .map(name => ({
       name,
-      time: fs.statSync(path.join(dir, name)).mtime.getTime()
+      time: fs.statSync(path.join(DIR, name)).mtime.getTime()
     }))
     .sort((a, b) => a.time - b.time) // oldest first
     .map(f => f.name);
 
   if (!files || files.length == 0) return null
 
-  let result = readFile( f )
-  fs.unlinkSync( f )
+  let f = files[0]
+  let fp = path.join(DIR, f)
+  let result = JSON.parse( fs.readFileSync(fp, 'utf-8') )
+  fs.unlinkSync( fp )
   return result
 }
-

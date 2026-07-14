@@ -127,7 +127,7 @@ exports.checkSufficient = function( ethtxn, expected ) {
     if ( ethtxn.to.toLowerCase() !== expected.token.toLowerCase() )
       return "token doesnt match expected"
 
-    let erc20Intf = new ethers.utils.Interface( ERC20ABI )
+    let erc20Intf = new ethers.Interface( ERC20ABI )
     let decoded = erc20Intf.parseTransaction( { data: ethtxn.input } )
     if ( decoded.name !== "0x095ea7b3" )
       return "should be an ERC20 approve() transaction"
@@ -157,4 +157,3 @@ exports.isUsed = function( ethtxnhash ) {
   let fname = TXNSDIR + ethtxnhash
   return fs.existsSync( fname )
 }
-

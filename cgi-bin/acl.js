@@ -29,6 +29,7 @@ exports.newEntry = function( pubkeyhex ) {
 
 exports.addDID = function( didobj ) {
   let rec = exports.getRecord( didobj.pubkeyhex )
+  if (!rec) rec = exports.newEntry( didobj.pubkeyhex )
   rec.did = didobj
   writeRecord( didobj.pubkeyhex, rec )
 }
@@ -36,7 +37,7 @@ exports.addDID = function( didobj ) {
 exports.pubkeyToHostPort = function( pubkeyhex ) {
   let rec = exports.getRecord( pubkeyhex )
   if (rec && rec.did)
-    return rec.did.url
+    return rec.did.url || rec.did.carp_url
 
   return null
 }
@@ -48,4 +49,3 @@ exports.ban = function( pubkeyhex, reason ) {
 
   writeRecord( pubkeyhex, it )
 }
-

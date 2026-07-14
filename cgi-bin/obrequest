@@ -23,7 +23,7 @@ async function handlePost( topubkey, reqobj ) {
   try {
     let blkreq = ecjson.redToBlack( privkeyhex, topubkey, reqobj )
 
-    let rsp = await fetch( 'http://' + url + '/cgibin/encrequest', {
+    let rsp = await fetch( 'http://' + hostport + '/cgi-bin/encrequest', {
       method: "POST",
       body: JSON.stringify(blkreq)
     } )
@@ -45,7 +45,7 @@ if (! admin.fromWithinLAN() ) {
   admin.respondHttp( 401, "local only" )
 }
 
-if (! process.env.REQUEST_METHOD === 'POST' ) {
+if ( process.env.REQUEST_METHOD !== 'POST' ) {
   admin.respondHttp( 405, "Please POST the request" )
 }
 
@@ -74,4 +74,3 @@ process.stdin.on('data', data => {
     admin.respondHttp( 400, e.toString() )
   }
 });
-

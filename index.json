@@ -11,7 +11,6 @@
       "content": "<unixtimestamp>"
     }
   },
-
   {
     "service": "encrypted-async-timenow",
     "descrip": "Get the current time from this server enc/async ping test",
@@ -38,8 +37,6 @@
       "content": "ACK"
     }
   },
-
-
   {
     "service": "myorders",
     "descrip": "A caller can fetch a list of their Order IDs",
@@ -67,7 +64,6 @@
       "content": "[ OrderIDa, OrderIDb, ... ]"
     }
   },
-
   {
     "service": "getorder",
     "descrip": "A caller can fetch the details of a given Order ID",
@@ -86,7 +82,9 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "getorder",
-      "params": [ "<orderidhexstring>" ],
+      "params": [
+        "<orderidhexstring>"
+      ],
       "id": "<cookie>"
     },
     "http-response": {
@@ -95,11 +93,9 @@
       "content": "{Order}"
     }
   },
-
   {
     "service": "submit",
-    "descrip":
-      "Seller submits details to make a new escrow contract transaction",
+    "descrip": "Seller submits details to make a new escrow contract transaction",
     "authentication": true,
     "synchronous": true,
     "fee": {
@@ -129,21 +125,14 @@
       "id": "<payment-txn-hash>"
     },
     "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
-    },
-    "http-response": {
       "status": "402 Payment Required",
       "contenttype": "application/json",
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "buy",
-    "descrip":
-      "Buyer requests transaction to place payment and bond into escrow",
+    "descrip": "Buyer requests transaction to place payment and bond into escrow",
     "authentication": true,
     "synchronous": true,
     "fee": {
@@ -165,13 +154,10 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "buy",
-      "params": [ "<OrderId>" ],
+      "params": [
+        "<OrderId>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -179,11 +165,9 @@
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "timeout",
-    "descrip":
-      "Buyer requests transaction to retrieve payment and bond from escrow",
+    "descrip": "Buyer requests transaction to retrieve payment and bond from escrow",
     "authentication": true,
     "synchronous": true,
     "fee": {
@@ -203,13 +187,10 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "timeout",
-      "params": [ "<OrderId>" ],
+      "params": [
+        "<OrderId>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -217,11 +198,9 @@
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "ship",
-    "descrip":
-      "Seller requests transaction to update contract with tracking reference",
+    "descrip": "Seller requests transaction to update contract with tracking reference",
     "authentication": true,
     "synchronous": true,
     "fee": {
@@ -241,13 +220,11 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "ship",
-      "params": [ "<OrderId>", "<tracking-reference>" ],
+      "params": [
+        "<OrderId>",
+        "<tracking-reference>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -255,11 +232,9 @@
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "confirm",
-    "descrip":
-      "Buyer acknowedges receipt and requests transaction to retrieve bond",
+    "descrip": "Buyer acknowedges receipt and requests transaction to retrieve bond",
     "authentication": true,
     "synchronous": false,
     "fee": {
@@ -279,13 +254,10 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "confirm",
-      "params": [ "<OrderId>" ],
+      "params": [
+        "<OrderId>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -293,11 +265,9 @@
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "note",
-    "descrip":
-      "Party requests transaction to place a note on the contract",
+    "descrip": "Party requests transaction to place a note on the contract",
     "authentication": true,
     "synchronous": false,
     "fee": {
@@ -317,13 +287,11 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "note",
-      "params": [ "<OrderId>", "<plaintextnote>" ],
+      "params": [
+        "<OrderId>",
+        "<plaintextnote>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -331,11 +299,9 @@
       "content": "<fee-object>"
     }
   },
-
   {
     "service": "arbitration",
-    "descrip":
-      "Buyer requests refund at seller's expense, shipment failed",
+    "descrip": "Buyer requests refund at seller's expense, shipment failed",
     "authentication": true,
     "synchronous": false,
     "fee": {
@@ -355,13 +321,11 @@
     "red-request": {
       "jsonrpc": "2.0",
       "method": "arbitration",
-      "params": [ "<OrderId>", "<plaintextreason>" ],
+      "params": [
+        "<OrderId>",
+        "<plaintextreason>"
+      ],
       "id": "<cookie>"
-    },
-    "http-response": {
-      "status": "200 OK",
-      "contenttype": "application/json",
-      "content": "ACK"
     },
     "http-response": {
       "status": "402 Payment Required",
@@ -369,5 +333,4 @@
       "content": "<fee-object>"
     }
   }
-
 ]

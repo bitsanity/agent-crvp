@@ -10,8 +10,9 @@ const escrobot = require( './escrobot.js' )
 
 const SERVICES = {
   "timenow" : true,
-  "encrypted-async-time-now" : true,
+  "encrypted-async-timenow" : true,
   "myorders" : true,
+  "getorder" : true,
   "submit" : true,
   "buy" : true,
   "timeout" : true,
@@ -197,4 +198,3 @@ module.exports.doresult = function() {
   } )
 
 }
-

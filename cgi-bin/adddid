@@ -15,7 +15,7 @@ function doIt( body ) {
 }
 
 try {
-  if (process.env.REQUEST_METHOD !== 'PUT') throw 'PUT only'
+  if (process.env.REQUEST_METHOD !== 'POST') throw 'POST only'
 
   if (!admin.fromWithinLAN()) {
     admin.respondHttp( 401, "inside LAN only" );
@@ -30,4 +30,3 @@ try {
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )
 }
-

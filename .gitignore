@@ -1,0 +1,9 @@
+# Local deployment/runtime state. Intentionally not tracked.
+/cgi-bin/acl/
+/cgi-bin/sessions/
+/cgi-bin/transactions/
+
+# Local npm install state for this deployment. Intentionally not tracked.
+/cgi-bin/node_modules/
+/cgi-bin/package.json
+/cgi-bin/package-lock.json

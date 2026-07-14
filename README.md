@@ -38,6 +38,7 @@ This protocol is built with:
 * make sure cgi module is enabled and `/usr/lib/cgi-bin` is accessible
 * be sure to install the npm dependencies `adilosjs` and `ecjsonrpc`
 * the `answers/`, `sessions/`, `requests/` and `acl/` subdirectories must exist and be writable
+* local deployment state is intentionally untracked: `cgi-bin/acl/`, `cgi-bin/sessions/`, `cgi-bin/transactions/`, `cgi-bin/node_modules/`, `cgi-bin/package.json`, and `cgi-bin/package-lock.json`
 * use proper JSON format { "name":"val" } instead of { name: "val" }
 * CARP interface host and port must be accessible to internet, may require port forwarding or other network changes
 
@@ -62,4 +63,3 @@ See:
 * `./standard.json` for the services required to adhere to CARP protocol
 * `./index.json` for the public services exposed by this interface, our agent
 * `./agent.json` for services our own agent can call from inside the LAN
-
