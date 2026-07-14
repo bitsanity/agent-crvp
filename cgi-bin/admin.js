@@ -49,5 +49,7 @@ module.exports.parseGetParams = function( querystr ) {
 
 
 module.exports.fromWithinLAN = function() {
-  return LOCAL_IP_REGEX.test( process.env.REMOTE_ADDR )
+  let address = process.env.REMOTE_ADDR || ''
+  address = address.replace( /^::ffff:/, '' )
+  return address === '::1' || LOCAL_IP_REGEX.test( address )
 }
