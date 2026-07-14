@@ -18,6 +18,7 @@ const LOCAL_IP_REGEX = /^(?:10\.|127\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.|1
 
 
 module.exports.respondHttp = function( statcode, content ) {
+  console.log( "Status: " + statcode + " " + HTTPRESPONSES[statcode] )
 
   if (typeof content === 'string' || content instanceof String) {
     console.log( "Content-Type: text/plain\n" )
