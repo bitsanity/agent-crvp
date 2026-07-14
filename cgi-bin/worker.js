@@ -5,8 +5,6 @@ const requests = require( './requests.js' )
 const answers = require( './answers.js' )
 const acl = require( './acl.js' )
 const admin = require( './admin.js' )
-const fees = require( './fees.js' )
-const escrobot = require( './escrobot.js' )
 
 const SERVICES = {
   "timenow" : true,
@@ -20,6 +18,21 @@ const SERVICES = {
   "confirm" : true,
   "note" : true,
   "arbitration" : true
+}
+
+// Keep no-fee encrypted coordination independent of optional commerce packages.
+const NO_FEE_SERVICES = {
+  "timenow" : true,
+  "encrypted-async-timenow" : true
+}
+
+function feeFor( servicename ) {
+  if (NO_FEE_SERVICES[servicename]) return null
+  return require( './fees.js' ).agentFee( servicename )
+}
+
+function escrow() {
+  return require( './escrobot.js' )
 }
 
 function screen( pubkeyhex ) {
@@ -63,7 +76,7 @@ exports.processRequest = async function ( paramobj ) {
 
   if (redobj.method === 'myorders') {
     try {
-      let ords = await escrobot.myorders( paramobj.spkhex )
+      let ords = await escrow().myorders( paramobj.spkhex )
       admin.respondHttp( 200, ords )
     }
     catch( e ) {
@@ -73,7 +86,7 @@ exports.processRequest = async function ( paramobj ) {
 
   if (redobj.method === 'getorder') {
     try {
-      let ord = await escrobot.getorder( redobj.params[0] )
+      let ord = await escrow().getorder( redobj.params[0] )
       admin.respondHttp( 200, ord )
     }
     catch( e ) {
@@ -81,9 +94,12 @@ exports.processRequest = async function ( paramobj ) {
     }
   }
 
-  let feeObj = fees.agentFee( redobj.method )
+  let feeObj = feeFor( redobj.method )
 
   if (feeObj && feeObj.amt) {
+
+    if (!env.VARS.AGENT_ETH_ADDRESS || !env.VARS.ETHERSCAN_API_KEY)
+      admin.respondHttp( 503, "commerce configuration missing" )
 
     if (redobj.method === 'buy') {
       let orderid = "" + redobj.params[0]
@@ -91,7 +107,7 @@ exports.processRequest = async function ( paramobj ) {
       if (! /^0x[0-9a-fA-F]{64}$/.test(orderid))
         admin.respondHttp( 400, "orderId param is missing or misformatted" )
 
-      let order = await escrobot.getorder( orderid )
+      let order = await escrow().getorder( orderid )
       if (!order) admin.respondHttp( 400, "orderId unrecognized" )
 
       if (order.token == 0) {
@@ -107,6 +123,7 @@ exports.processRequest = async function ( paramobj ) {
     if (!cookie) admin.respondHttp( 402, feeObj )
 
     try {
+      let fees = require( './fees.js' )
       let etxn = await fees.getEthereumTxn( cookie )
 
       if (!etxn || !etxn.from)
@@ -165,10 +182,8 @@ module.exports.dorequest = function() {
 
   // systems check
 
-  if (    !env.VARS.AGENT_PRIVKEYHEX
-       || !env.VARS.AGENT_ETH_ADDRESS
-       || !env.VARS.ETHERSCAN_API_KEY )
-    admin.respondHttp( 503, "config missing" )
+  if (!env.VARS.AGENT_PRIVKEYHEX)
+    admin.respondHttp( 503, "agent key configuration missing" )
 
   // all encrequests are POST only
 
