@@ -4,10 +4,107 @@
 
 const secp256k1 = require( 'secp256k1' )
 const ecjson = require( 'ecjsonrpc' )
+const { spawn } = require( 'node:child_process' )
 const env = require( './env.js' )
 const admin = require( './admin.js' )
 const acl = require( './acl.js' )
 const requests = require( './requests.js' )
+
+async function postWithFetch( url, bodystr ) {
+
+  let rsp = await fetch( url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: bodystr
+  } )
+
+  let body = await rsp.text().catch( () => "" )
+
+  return {
+    transport: "fetch",
+    ok: rsp.ok,
+    status: rsp.status,
+    body
+  }
+}
+
+function postWithCurl( url, bodystr ) {
+
+  return new Promise( (resolve, reject) => {
+
+    let args = [
+      "-sS",
+      "--max-time", "20",
+      "-X", "POST",
+      url,
+      "-H", "Content-Type: application/json",
+      "--data-binary", "@-",
+      "-w", "\n%{http_code}"
+    ]
+
+    let proc = spawn( "curl", args, { stdio: ["pipe", "pipe", "pipe"] } )
+
+    let stdout = ""
+    let stderr = ""
+
+    proc.stdout.on( "data", data => { stdout += data.toString() } )
+    proc.stderr.on( "data", data => { stderr += data.toString() } )
+    proc.on( "error", reject )
+    proc.on( "close", code => {
+      if (code !== 0) {
+        let err = new Error( stderr || ("curl exited " + code) )
+        err.code = code
+        reject( err )
+        return
+      }
+
+      let parts = stdout.split( "\n" )
+      let statusstr = parts.pop()
+      let status = parseInt( statusstr, 10 )
+      let body = parts.join( "\n" )
+
+      resolve( {
+        transport: "curl",
+        ok: status >= 200 && status < 300,
+        status,
+        body
+      } )
+    } )
+
+    proc.stdin.write( bodystr )
+    proc.stdin.end()
+  } )
+}
+
+async function postEncryptedResult( url, blkresp ) {
+
+  let bodystr = JSON.stringify( blkresp )
+
+  try {
+    return await postWithFetch( url, bodystr )
+  }
+  catch( e ) {
+    return await postWithCurl( url, bodystr )
+  }
+}
+
+function normalizeReply( cookie, replyobj ) {
+
+  if (    replyobj
+       && typeof replyobj === "object"
+       && replyobj.jsonrpc === "2.0"
+       && (replyobj.result !== undefined || replyobj.error !== undefined) ) {
+    if (replyobj.id === undefined || replyobj.id === null)
+      replyobj.id = cookie
+    return replyobj
+  }
+
+  return {
+    jsonrpc: "2.0",
+    result: replyobj,
+    id: cookie
+  }
+}
 
 async function handlePost( topubkey, cookie, replyobj ) {
 
@@ -23,24 +120,23 @@ async function handlePost( topubkey, cookie, replyobj ) {
     admin.respondHttp( 503, "key maintenance required" )
   }
 
-  let redreslt = {
-    jsonrpc: "2.0",
-    result: replyobj,
-    id: cookie
-  }
+  let redreslt = normalizeReply( cookie, replyobj )
 
   let blkresp = ecjson.redToBlack( privkeyhex, shortpub, redreslt )
 
-  let rsp = await fetch( 'http://' + url + '/cgi-bin/encresult', {
-    method: "POST",
-    body: JSON.stringify(blkresp)
-  } )
+  let rsp = await postEncryptedResult(
+    'http://' + url + '/cgi-bin/encresult',
+    blkresp
+  )
 
   if (!rsp.ok) {
-    admin.respondHttp( 502, "remote encresult failed: " + rsp.status )
+    admin.respondHttp(
+      502,
+      "remote encresult failed via " + rsp.transport + ": " + rsp.status
+    )
   }
 
-  requests.setResult( shortpub, cookie, replyobj )
+  requests.setResult( shortpubhex, cookie, replyobj )
   admin.respondHttp( 200, "ACK" )
 }
 
@@ -70,15 +166,20 @@ for (const part of cookieparts) {
   let kv = part.trim().split('=')
   cookiemap[kv[0]] = kv.slice(1).join('=')
 }
-let topubkey = cookiemap.agent
+let topubkey = cookiemap.agent || cookiemap.to
 let reqcookie = cookiemap.cookie
 
 if (!topubkey || !reqcookie)
   admin.respondHttp( 400, "Request cookie/id not found" )
 
-process.stdin.on('data', async data => {
+let chunks = []
+process.stdin.on('data', data => {
+  chunks.push( data )
+});
+
+process.stdin.on('end', async () => {
   try {
-    let body = JSON.parse( data.toString() )
+    let body = JSON.parse( Buffer.concat(chunks).toString() )
     await handlePost( topubkey, reqcookie, body )
   }
   catch( e ) {
