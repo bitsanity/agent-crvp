@@ -18,6 +18,7 @@ const LOCAL_IP_REGEX = /^(?:10\.|127\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.|1
 
 
 module.exports.respondHttp = function( statcode, content ) {
+  console.log( "Status: " + statcode + " " + HTTPRESPONSES[statcode] )
 
   console.log( "Status: " + statcode + " " + HTTPRESPONSES[statcode] )
 
@@ -50,5 +51,7 @@ module.exports.parseGetParams = function( querystr ) {
 
 
 module.exports.fromWithinLAN = function() {
-  return LOCAL_IP_REGEX.test( process.env.REMOTE_ADDR )
+  let address = process.env.REMOTE_ADDR || ''
+  address = address.replace( /^::ffff:/, '' )
+  return address === '::1' || LOCAL_IP_REGEX.test( address )
 }
