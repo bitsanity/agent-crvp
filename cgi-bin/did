@@ -1,5 +1,7 @@
 #!/usr/bin/node
 
+const admin = require( './admin.js' )
+
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
