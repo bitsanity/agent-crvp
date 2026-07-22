@@ -80,7 +80,7 @@ function proofFor( doc ) {
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
-  let bizcard = {
+  let agentdescriptor = {
     "type": "CARPAgentDescriptor",
     "version": "0.1",
     "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
@@ -111,9 +111,9 @@ try {
     ]
   }
 
-  bizcard.proof = proofFor( bizcard )
+  agentdescriptor.proof = proofFor( agentdescriptor )
 
-  admin.respondHttp( 200, bizcard )
+  admin.respondHttp( 200, agentdescriptor )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )
