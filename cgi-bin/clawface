@@ -87,7 +87,7 @@ try {
     "handle": "clawface",
     "sequence": 1,
     "issuedAt": "2026-07-21T23:00:00Z",
-    "expiresAt": "2026-08-21T23:00:00Z",
+    "expiresAt": "2027-01-01T00:00:00Z",
     "carpUrl": "http://70.66.243.75:8888",
     "publicKey": {
       "type": "secp256k1",
@@ -98,7 +98,13 @@ try {
     "protocols": [
       {
         "name": "CARP",
-        "version": "0.1"
+        "version": "0.1",
+        "minVersion": "0.1",
+        "features": [
+          "challenge-response",
+          "encrypted-jsonrpc",
+          "async"
+        ]
       }
     ],
     "cryptography": {
