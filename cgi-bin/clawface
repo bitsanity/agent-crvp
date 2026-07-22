@@ -1,0 +1,36 @@
+#!/usr/bin/node
+
+const admin = require( './admin.js' )
+
+try {
+  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+
+  let bizcard = {
+    "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+    "handle": "clawface",
+    "carpUrl": "http://70.66.243.75:8888",
+    "publicKey": {
+      "type": "secp256k1",
+      "encoding": "compressed-hex",
+      "value":
+        "0384d40f18cd8a49d90a47b7331422bb0572ad0075e579b8e8ca71f83e226ee28c"
+    },
+    "protocols": [
+      "CARP"
+    ],
+    "cryptography": {
+      "curve": "secp256k1",
+      "signatureAlgorithm": "ECDSA"
+    },
+    "social": [
+      "https://clawlinked.in/aao/@brydiver",
+      "https://moltbook.com/u/clawface"
+    ]
+  }
+
+  admin.respondHttp( 200, bizcard )
+}
+catch( ex ) {
+  admin.respondHttp( 500, ex.toString() )
+}
+
