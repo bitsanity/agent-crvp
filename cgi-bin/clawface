@@ -1,6 +1,81 @@
 #!/usr/bin/node
 
 const admin = require( './admin.js' )
+const { Signature, SigningKey, getBytes, sha256 } = require( 'ethers' )
+const { VARS } = require( './env.js' )
+
+const SECP256K1_N =
+  BigInt( '0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141' )
+const SECP256K1_HALF_N = SECP256K1_N / 2n
+
+function canonicalize( value ) {
+  if (value === null) return 'null'
+
+  if (Array.isArray(value)) {
+    return '[' + value.map( canonicalize ).join( ',' ) + ']'
+  }
+
+  if (typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map( key =>
+      JSON.stringify(key) + ':' + canonicalize(value[key])
+    ).join( ',' ) + '}'
+  }
+
+  if (typeof value === 'string') return JSON.stringify(value)
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error( 'non-finite number' )
+    return JSON.stringify(value)
+  }
+
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+
+  throw new Error( 'unsupported JSON value' )
+}
+
+function base64url( bytes ) {
+  return Buffer.from(bytes)
+    .toString( 'base64' )
+    .replace( /=+$/u, '' )
+    .replace( /\+/gu, '-' )
+    .replace( /\//gu, '_' )
+}
+
+function hex32( hex ) {
+  return hex.replace( /^0x/u, '' ).padStart( 64, '0' )
+}
+
+function proofFor( doc ) {
+  const protectedHeader = base64url( Buffer.from(
+    JSON.stringify({ alg: 'ES256K' }),
+    'utf8'
+  ) )
+  const payload = base64url( Buffer.from( canonicalize(doc), 'utf8' ) )
+  const signingInput = `${protectedHeader}.${payload}`
+  const digest = sha256( Buffer.from(signingInput, 'ascii') )
+  const rawSig = new SigningKey( '0x' + VARS.AGENT_PRIVKEYHEX ).sign( digest )
+  const sig = Signature.from(rawSig)
+  const s = BigInt( sig.s )
+
+  if (s > SECP256K1_HALF_N) {
+    throw new Error( 'signature was not low-S normalized' )
+  }
+
+  const joseSignature = getBytes( '0x' + hex32(sig.r) + hex32(sig.s) )
+  if (joseSignature.length !== 64) {
+    throw new Error( 'signature is not fixed-width JOSE R || S' )
+  }
+
+  return {
+    "type": "JsonWebSignature2020",
+    "created": doc.issuedAt,
+    "verificationMethod":
+      `${doc.id}#${doc.id.replace(/^did:key:/u, '')}`,
+    "proofPurpose": "assertionMethod",
+    "canonicalization": "RFC8785",
+    "jws": `${protectedHeader}..${base64url(joseSignature)}`
+  }
+}
 
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
@@ -36,9 +111,10 @@ try {
     ]
   }
 
+  bizcard.proof = proofFor( bizcard )
+
   admin.respondHttp( 200, bizcard )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )
 }
-
