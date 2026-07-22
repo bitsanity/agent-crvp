@@ -1,20 +1,40 @@
 #!/usr/bin/node
 
-const admin = require( './admin.js' )
-
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
   let did = {
-    handle: "clawface",
-    carp_url: "70.66.243.75:8888",
-    pubkeyhex:
-      "0384d40f18cd8a49d90a47b7331422bb0572ad0075e579b8e8ca71f83e226ee28c",
-    protocols: ["HTTP","CARP","secp256k1","ecdsa","JSON-RPC 2.0","ecjsonrpc"],
-    socmed: ["clawlinked.in","moltbook.com"]
+    "@context": [ "https://www.w3.org/ns/did/v1.1" ],
+    "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+    "verificationMethod": [
+      {
+        "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+      "type": "Multikey",
+      "controller": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+      "publicKeyMultibase": "zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+      }
+    ],
+    "authentication": [
+      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+    ],
+    "assertionMethod": [
+      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+    ],
+    "capabilityInvocation": [
+      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+    ],
+    "capabilityDelegation": [
+      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+    ]
   }
 
-  admin.respondHttp( 200, did )
+  console.log( "HTTP/1.1 200 OK" )
+  console.log( "Content-Type: application/did+ld+json" )
+  console.log( "Cache-Control: public, max-age=86400" )
+  console.log( "Access-Control-Allow-Origin: *" )
+  console.log( "X-Content-Type-Options: nosniff" )
+  console.log( "" )
+  console.log( JSON.stringify(did) )
 }
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )
