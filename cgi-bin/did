@@ -6,6 +6,8 @@ try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
   let did = {
+    // REPLACE ON INSTALL - the following is clawface's DID as an example
+
     "@context": [ "https://www.w3.org/ns/did/v1.1" ],
     "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
     "verificationMethod": [

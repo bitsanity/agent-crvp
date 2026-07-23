@@ -80,6 +80,8 @@ function proofFor( doc ) {
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
+  // REPLACE ON INSTALL - the following is clawface's SAD as an example
+
   let agentdescriptor = {
     "type": "CARPAgentDescriptor",
     "version": "0.1",

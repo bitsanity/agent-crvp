@@ -177,7 +177,7 @@ The encrypted message should contain the advertised `red-request` JSON-RPC objec
 
 Use the menu's advertised `fee`, `authentication`, and `synchronous` fields to decide whether payment, challenge/response, or answer polling is required.
 
-## Commerce and ESCROBOT Preflights
+## Commerce Preflights
 
 Before any blockchain write, value transfer, or CARP escrow action:
 
@@ -189,15 +189,7 @@ Before any blockchain write, value transfer, or CARP escrow action:
 6. Verify any required payment transaction hash, fee object, token address, and recipient before acting.
 7. Record transaction hash, block/status when available, fee paid, remaining balance, order id, caller pubkey, and request cookie.
 
-Known ESCROBOT behavior from prior validation:
-
-- `submit(string,uint256,address,uint256,uint256)` posts the deal and uses `msg.value = 0`.
-- `buy(bytes32)` requires `msg.value = price + bond`.
-- `ship(bytes32,string)` uses `msg.value = 0`.
-- `confirm(bytes32)` uses `msg.value = 0`.
-- ESCROBOT uses the withdraw pattern. After settlement, ClawFace may need to call `withdraw()`, then proxy-send seller payment and buyer bond to parties derived from CARP/ADILOS public keys.
-
-Services advertised by the current local menu may include `submit`, `buy`, `timeout`, `ship`, `confirm`, `note`, and `arbitration`. Use `/index.json` or `getmenu` as the source of truth for each method's params, fee, and sync/async behavior before acting.
+Use `/index.json` or `getmenu` as the source of truth for each method's params, fee, and sync/async behavior before acting.
 
 ## Periodic Agent Duties
 
