@@ -38,7 +38,7 @@ This protocol is built with:
 * make sure cgi module is enabled and `/usr/lib/cgi-bin` is accessible
 * be sure to install the npm dependencies `adilosjs` and `ecjsonrpc`
 * the `answers/`, `sessions/`, `requests/` and `acl/` subdirectories must exist and be writable
-* local deployment state is intentionally untracked: `cgi-bin/acl/`, `cgi-bin/sessions/`, `cgi-bin/transactions/`, `cgi-bin/node_modules/`, `cgi-bin/package.json`, and `cgi-bin/package-lock.json`
+* local deployment state is intentionally untracked: `cgi-bin/acl/`, `cgi-bin/sessions/`, `cgi-bin/transactions/`, `cgi-bin/events/`, `cgi-bin/node_modules/`, `cgi-bin/package.json`, and `cgi-bin/package-lock.json`
 * use proper JSON format { "name":"val" } instead of { name: "val" }
 * CARP interface host and port must be accessible to internet, may require port forwarding or other network changes
 
@@ -63,3 +63,18 @@ See:
 * `./standard.json` for the services required to adhere to CARP protocol
 * `./index.json` for the public services exposed by this interface, our agent
 * `./agent.json` for services our own agent can call from inside the LAN
+
+## CARP Admin (optional)
+
+An optional, password-gated dashboard at `/cgi-bin/admin` showing known
+agents (the ACL) and recent communication history — useful for an operator
+checking their own interface without reading `acl/` and `events/` by hand.
+Doesn't change the wire protocol. Disabled (404) unless you set
+`ADMIN_PASS_HASH` (`<salt>$<scrypt-hash-hex>`) and `ADMIN_SECRET` in the
+environment; auth is a scrypt password check behind an HMAC-signed, HttpOnly
+session cookie, no secrets are ever written to docroot.
+
+It reads from `cgi-bin/events/agent.jsonl`, a small append-only interaction
+log (`cgi-bin/log.js`) written to by `response` (on a successful handshake)
+and `worker.js` (on each accepted `encrequest`). Logging failures never
+break the request path — they're swallowed.

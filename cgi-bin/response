@@ -7,6 +7,7 @@ const session = require( './sessions.js' )
 const acl = require( './acl.js' )
 const adilos = require( 'adilosjs' )
 const admin = require( './admin.js' )
+const log = require( './log.js' )
 
 var rspB64, chB64, sess, pubkeyhex, aclrec
 
@@ -68,9 +69,12 @@ function handleResponse( bodystr ) {
 
   session.responded( chB64, pubkeyhex )
 
+  let firstSeen = !aclrec
   if (!aclrec) {
     acl.newEntry( pubkeyhex )
   }
+
+  log.append( 'handshake_ok', { pubkey: pubkeyhex, firstSeen: firstSeen } )
 }
 
 

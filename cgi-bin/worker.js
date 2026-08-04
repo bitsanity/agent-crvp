@@ -7,6 +7,7 @@ const acl = require( './acl.js' )
 const admin = require( './admin.js' )
 const fees = require( './fees.js' )
 const escrobot = require( './escrobot.js' )
+const log = require( './log.js' )
 
 const SERVICES = {
   "timenow" : true,
@@ -132,6 +133,8 @@ exports.processRequest = async function ( paramobj ) {
   } // end if fee required
 
   requests.add( paramobj.spkhex, redobj )
+
+  log.append( 'service_call', { pubkey: paramobj.spkhex, service: redobj.method } )
 
   admin.respondHttp( 200, "ACK" )
 }
