@@ -110,6 +110,8 @@ exports.processRequest = async function ( paramobj ) {
 
   requests.add( paramobj.spkhex, redobj )
 
+  log.append( 'service_call', { pubkey: paramobj.spkhex, service: redobj.method } )
+
   admin.respondHttp( 200, "ACK" )
 }
 

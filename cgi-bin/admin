@@ -1,0 +1,183 @@
+#!/usr/bin/node
+process.chdir( __dirname )
+
+// Optional, password-gated admin dashboard (suggestion #4 in
+// https://github.com/bitsanity/agent-crvp/issues/2): known agents (the ACL)
+// and recent communication history, for operators who want a visual check
+// on their interface without reading acl/ and events/ by hand.
+// Auth = scrypt password check -> HMAC-signed session cookie (HttpOnly).
+// Set ADMIN_PASS_HASH ("<salt>$<scrypt-hash>") and ADMIN_SECRET in the
+// container env to enable this endpoint; both env vars are required, and it
+// stays a 404 until they're set.
+
+const crypto = require( 'node:crypto' )
+const fs = require( 'node:fs' )
+const log = require( './log.js' )
+
+const PASS_HASH = process.env.ADMIN_PASS_HASH || ''
+const SECRET    = process.env.ADMIN_SECRET || ''
+const COOKIE    = 'carp_admin'
+const TTL_MS    = 8 * 3600 * 1000
+
+function send( status, headers, body ) {
+  process.stdout.write( 'HTTP/1.1 ' + status + '\r\n' )
+  headers.forEach( function( h ) { process.stdout.write( h + '\r\n' ) } )
+  process.stdout.write( '\r\n' )
+  if (body) process.stdout.write( body )
+  process.exit( 0 )
+}
+function page( status, body, extra ) {
+  send( status, [ 'Content-Type: text/html; charset=utf-8', 'Cache-Control: no-store' ].concat( extra || [] ), body )
+}
+
+function sign( exp ) { return exp + '.' + crypto.createHmac( 'sha256', SECRET ).update( String(exp) ).digest( 'hex' ) }
+function validToken( tok ) {
+  if (!tok || !SECRET) return false
+  let i = tok.indexOf( '.' ); if (i < 0) return false
+  let exp = tok.slice( 0, i ), sig = tok.slice( i + 1 )
+  let good = crypto.createHmac( 'sha256', SECRET ).update( exp ).digest( 'hex' )
+  try { if (!crypto.timingSafeEqual( Buffer.from(sig), Buffer.from(good) )) return false } catch (e) { return false }
+  return Number( exp ) > Date.now()
+}
+function checkPw( pw ) {
+  if (!pw || PASS_HASH.indexOf( '$' ) < 0) return false
+  let parts = PASS_HASH.split( '$' ), salt = parts[0], hash = parts[1]
+  let got; try { got = crypto.scryptSync( pw, salt, 64 ).toString( 'hex' ) } catch (e) { return false }
+  try { return crypto.timingSafeEqual( Buffer.from(got), Buffer.from(hash) ) } catch (e) { return false }
+}
+function cookie( name ) {
+  let c = process.env.HTTP_COOKIE || ''
+  let parts = c.split( ';' )
+  for (let i = 0; i < parts.length; i++) {
+    let kv = parts[i].trim().split( '=' )
+    if (kv[0] === name) return kv.slice(1).join( '=' )
+  }
+  return null
+}
+function esc( s ) { return String( s == null ? '' : s ).replace( /[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] } ) }
+function parseForm( body ) {
+  let out = {}
+  body.split( '&' ).forEach( function( p ) {
+    let kv = p.split( '=' )
+    let k = decodeURIComponent( (kv[0] || '').replace( /\+/g, ' ' ) )
+    let v = decodeURIComponent( (kv.slice(1).join('=') || '').replace( /\+/g, ' ' ) )
+    if (k) out[k] = v
+  } )
+  return out
+}
+function ago( ts ) {
+  let d = Date.now() - ts
+  if (d < 60000) return Math.floor(d/1000) + 's ago'
+  if (d < 3600000) return Math.floor(d/60000) + 'm ago'
+  if (d < 86400000) return Math.floor(d/3600000) + 'h ago'
+  return Math.floor(d/86400000) + 'd ago'
+}
+function loadAgents() {
+  let agents = []
+  try {
+    fs.readdirSync( './acl' ).forEach( function( f ) {
+      let rec = {}; try { rec = JSON.parse( fs.readFileSync( './acl/' + f, 'utf-8' ) ) } catch (e) {}
+      agents.push( { pub: f, created: rec.created || null, banned: !!rec.bannedDate } )
+    } )
+  } catch (e) {}
+  return agents
+}
+
+let CSS = '<style>'
+  + 'body{margin:0;background:#0b0d0c;color:#e6e8e7;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}'
+  + 'a{color:#38c68b}.wrap{max-width:900px;margin:0 auto;padding:0 20px}'
+  + 'code,.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}'
+  + 'header{padding:28px 0;border-bottom:1px solid #1c211e}h1{font-size:22px;font-weight:600;margin:0}'
+  + 'section{padding:26px 0;border-bottom:1px solid #1c211e}'
+  + 'h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8b938d;margin:0 0 14px;font-weight:600}'
+  + '.cards{display:flex;gap:14px;flex-wrap:wrap}.card{background:#121513;border:1px solid #1c211e;border-radius:8px;padding:16px 20px;min-width:120px}'
+  + '.card .n{font-size:28px;color:#38c68b}.card .l{font-size:12px;color:#8b938d}'
+  + 'table{width:100%;border-collapse:collapse;font-size:13px}'
+  + 'th{text-align:left;color:#8b938d;font-weight:600;padding:6px 10px;border-bottom:1px solid #1c211e}'
+  + 'td{padding:7px 10px;border-bottom:1px solid #1c211e}'
+  + '.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid #1c211e}'
+  + '.tag.ok{color:#38c68b;border-color:#2a4a3c}.tag.new{color:#bada55;border-color:#4a4a2a}.tag.banned{color:#ff8b8b;border-color:#4a2a2a}'
+  + '.empty{color:#8b938d;font-size:13px;padding:14px 0}'
+  + '.login{max-width:340px;margin:14vh auto;background:#121513;border:1px solid #1c211e;border-radius:8px;padding:26px}'
+  + '.login input{width:100%;box-sizing:border-box;padding:10px 12px;margin:8px 0;background:#0b0d0c;border:1px solid #1c211e;border-radius:6px;color:#fff}'
+  + '.login button{width:100%;padding:10px;margin-top:8px;background:#38c68b;color:#0b0d0c;border:0;border-radius:6px;font-weight:600;cursor:pointer}'
+  + '.err{color:#ff6b6b;font-size:13px;margin-top:8px}.foot{color:#8b938d;font-size:12px;padding:20px}'
+  + '</style>'
+
+function loginPage( err ) {
+  return '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CARP Admin</title>' + CSS
+    + '<form class="login" method="POST" action="/cgi-bin/admin">'
+    + '<h1 style="font-size:18px;margin:0 0 4px">CARP admin</h1>'
+    + '<p style="color:#8b938d;font-size:13px;margin:0 0 4px">Known agents and communication history.</p>'
+    + '<input type="password" name="pw" placeholder="password" autofocus autocomplete="current-password">'
+    + '<button type="submit">Log in</button>'
+    + (err ? '<div class="err">' + esc(err) + '</div>' : '')
+    + '</form>'
+}
+
+function dashboard() {
+  let agents = loadAgents()
+  let events = log.read( 200 )
+
+  let agentRows = agents.map( function( a ) {
+    return '<tr><td class="mono">' + esc( a.pub.slice(0,24) ) + '…</td>'
+      + '<td>' + (a.created ? ago(a.created) : '—') + '</td>'
+      + '<td>' + (a.banned ? '<span class="tag banned">banned</span>' : '<span class="tag ok">active</span>') + '</td></tr>'
+  } ).join( '' )
+
+  let evRows = events.map( function( e ) {
+    let tag = e.event === 'handshake_ok'
+      ? '<span class="tag ' + (e.firstSeen ? 'new' : 'ok') + '">' + (e.firstSeen ? 'new agent' : 'handshake') + '</span>'
+      : '<span class="tag">' + esc(e.event) + '</span>'
+    return '<tr><td>' + ago(e.ts) + '</td><td>' + tag + '</td>'
+      + '<td class="mono">' + esc( e.pubkey ? String(e.pubkey).slice(0,20) + '…' : '—' ) + '</td>'
+      + '<td style="color:#8b938d">' + esc( e.service || '' ) + '</td></tr>'
+  } ).join( '' )
+
+  return '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CARP Admin</title>' + CSS
+    + '<header><div class="wrap"><h1>CARP admin</h1>'
+    + '<p style="color:#8b938d;font-size:13px;margin:6px 0 0">Known agents and communication history · <a href="/cgi-bin/admin?logout=1">log out</a></p></div></header>'
+    + '<section><div class="wrap"><div class="cards">'
+    + '<div class="card"><div class="n">' + agents.length + '</div><div class="l">known agents</div></div>'
+    + '<div class="card"><div class="n">' + events.length + '</div><div class="l">events logged</div></div>'
+    + '</div></div></section>'
+    + '<section><div class="wrap"><h2>Known agents (ACL)</h2>'
+    + (agents.length ? '<table><thead><tr><th>Public key</th><th>First seen</th><th>Status</th></tr></thead><tbody>' + agentRows + '</tbody></table>'
+        : '<div class="empty">No agents have completed the handshake yet.</div>')
+    + '</div></section>'
+    + '<section><div class="wrap"><h2>Communication history</h2>'
+    + (events.length ? '<table><thead><tr><th>When</th><th>Event</th><th>Peer</th><th>Service</th></tr></thead><tbody>' + evRows + '</tbody></table>'
+        : '<div class="empty">No interactions recorded yet.</div>')
+    + '</div></section>'
+    + '<div class="wrap foot">CARP admin · newest first, last 200 events</div>'
+}
+
+//
+// main
+//
+if (!PASS_HASH || !SECRET) page( 404, 'Not found' )
+
+let method = process.env.REQUEST_METHOD || 'GET'
+let authed = validToken( cookie( COOKIE ) )
+
+if (method === 'GET' && /(?:^|[?&])logout=1/.test( process.env.QUERY_STRING || '' )) {
+  page( 200, loginPage(null), [ 'Set-Cookie: ' + COOKIE + '=; HttpOnly; SameSite=Strict; Path=/cgi-bin/; Max-Age=0' ] )
+}
+
+if (method === 'POST') {
+  let chunks = ''
+  process.stdin.on( 'data', function(d){ chunks += d.toString(); if (chunks.length > 4096) chunks = chunks.slice(0,4096) } )
+  process.stdin.on( 'end', function() {
+    let form = parseForm( chunks )
+    if (checkPw( form.pw || '' )) {
+      let exp = Date.now() + TTL_MS
+      page( 200, dashboard(), [ 'Set-Cookie: ' + COOKIE + '=' + sign(exp) + '; HttpOnly; SameSite=Strict; Path=/cgi-bin/; Max-Age=' + Math.floor(TTL_MS/1000) ] )
+    }
+    else {
+      page( 401, loginPage( 'Incorrect password.' ) )
+    }
+  } )
+}
+else {
+  page( 200, authed ? dashboard() : loginPage(null) )
+}

@@ -32,7 +32,7 @@ Thereafter, agents using CARP can exchange encrypted requests for service and re
 * make sure cgi module is enabled and accessible
 * be sure to install the npm dependencies `adilosjs` and `ecjsonrpc`
 * the `answers/`, `sessions/`, `requests/` and `acl/` subdirectories must exist and be writable
-* local deployment state is intentionally untracked: `cgi-bin/acl/`, `cgi-bin/sessions/`, `cgi-bin/transactions/`, `cgi-bin/node_modules/`, `cgi-bin/package.json`, and `cgi-bin/package-lock.json`
+* local deployment state is intentionally untracked: `cgi-bin/acl/`, `cgi-bin/sessions/`, `cgi-bin/transactions/`, `cgi-bin/events/`, `cgi-bin/node_modules/`, `cgi-bin/package.json`, and `cgi-bin/package-lock.json`
 * use proper JSON format { "name":"val" } instead of { name: "val" }
 * CARP interface host and port must be accessible to internet, may require port forwarding or other network changes
 

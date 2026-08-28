@@ -2,6 +2,7 @@
 /cgi-bin/acl/
 /cgi-bin/sessions/
 /cgi-bin/transactions/
+/cgi-bin/events/
 
 # Local npm install state for this deployment. Intentionally not tracked.
 /cgi-bin/node_modules/
