@@ -17,6 +17,7 @@ const HTTPRESPONSES = {
 
 
 module.exports.respondHttp = function( statcode, content ) {
+  console.log( "Status: " + statcode + " " + HTTPRESPONSES[statcode] )
 
   console.log( "Status: " + statcode + " " + HTTPRESPONSES[statcode] )
 

@@ -21,6 +21,21 @@ const SERVICES = {
   "arbitration" : true
 }
 
+// Keep no-fee encrypted coordination independent of optional commerce packages.
+const NO_FEE_SERVICES = {
+  "timenow" : true,
+  "encrypted-async-timenow" : true
+}
+
+function feeFor( servicename ) {
+  if (NO_FEE_SERVICES[servicename]) return null
+  return require( './fees.js' ).agentFee( servicename )
+}
+
+function escrow() {
+  return require( './escrobot.js' )
+}
+
 function screen( pubkeyhex ) {
 
   let caller = acl.getRecord( pubkeyhex )
@@ -68,6 +83,7 @@ exports.processRequest = async function ( paramobj ) {
     if (!cookie) admin.respondHttp( 402, feeObj )
 
     try {
+      let fees = require( './fees.js' )
       let etxn = await fees.getEthereumTxn( cookie )
 
       if (!etxn || !etxn.from)
@@ -99,6 +115,7 @@ exports.processRequest = async function ( paramobj ) {
 
 function processAnswer( blkobj ) {
   try {
+    screen( blkobj.spkhex )
     let redobj = toRedObj( blkobj )
     redobj.sender = blkobj.spkhex
 
@@ -126,10 +143,8 @@ module.exports.dorequest = function() {
 
   // systems check
 
-  if (    !env.VARS.AGENT_PRIVKEYHEX
-       || !env.VARS.AGENT_ETH_ADDRESS
-       || !env.VARS.ETHERSCAN_API_KEY )
-    admin.respondHttp( 503, "config missing" )
+  if (!env.VARS.AGENT_PRIVKEYHEX)
+    admin.respondHttp( 503, "agent key configuration missing" )
 
   // all encrequests are POST only
 
