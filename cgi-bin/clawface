@@ -1,0 +1,128 @@
+#!/usr/bin/node
+
+const admin = require( './admin.js' )
+const { Signature, SigningKey, getBytes, sha256 } = require( 'ethers' )
+const { VARS } = require( './env.js' )
+
+const SECP256K1_N =
+  BigInt( '0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141' )
+const SECP256K1_HALF_N = SECP256K1_N / 2n
+
+function canonicalize( value ) {
+  if (value === null) return 'null'
+
+  if (Array.isArray(value)) {
+    return '[' + value.map( canonicalize ).join( ',' ) + ']'
+  }
+
+  if (typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map( key =>
+      JSON.stringify(key) + ':' + canonicalize(value[key])
+    ).join( ',' ) + '}'
+  }
+
+  if (typeof value === 'string') return JSON.stringify(value)
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error( 'non-finite number' )
+    return JSON.stringify(value)
+  }
+
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+
+  throw new Error( 'unsupported JSON value' )
+}
+
+function base64url( bytes ) {
+  return Buffer.from(bytes)
+    .toString( 'base64' )
+    .replace( /=+$/u, '' )
+    .replace( /\+/gu, '-' )
+    .replace( /\//gu, '_' )
+}
+
+function hex32( hex ) {
+  return hex.replace( /^0x/u, '' ).padStart( 64, '0' )
+}
+
+function proofFor( doc ) {
+  const protectedHeader = base64url( Buffer.from(
+    JSON.stringify({ alg: 'ES256K' }),
+    'utf8'
+  ) )
+  const payload = base64url( Buffer.from( canonicalize(doc), 'utf8' ) )
+  const signingInput = `${protectedHeader}.${payload}`
+  const digest = sha256( Buffer.from(signingInput, 'ascii') )
+  const rawSig = new SigningKey( '0x' + VARS.AGENT_PRIVKEYHEX ).sign( digest )
+  const sig = Signature.from(rawSig)
+  const s = BigInt( sig.s )
+
+  if (s > SECP256K1_HALF_N) {
+    throw new Error( 'signature was not low-S normalized' )
+  }
+
+  const joseSignature = getBytes( '0x' + hex32(sig.r) + hex32(sig.s) )
+  if (joseSignature.length !== 64) {
+    throw new Error( 'signature is not fixed-width JOSE R || S' )
+  }
+
+  return {
+    "type": "JsonWebSignature2020",
+    "created": doc.issuedAt,
+    "verificationMethod":
+      `${doc.id}#${doc.id.replace(/^did:key:/u, '')}`,
+    "proofPurpose": "assertionMethod",
+    "canonicalization": "RFC8785",
+    "jws": `${protectedHeader}..${base64url(joseSignature)}`
+  }
+}
+
+try {
+  if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
+
+  // REPLACE ON INSTALL - the following is clawface's SAD as an example
+
+  let agentdescriptor = {
+    "type": "CARPAgentDescriptor",
+    "version": "0.1",
+    "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+    "handle": "clawface",
+    "sequence": 1,
+    "issuedAt": "2026-07-21T23:00:00Z",
+    "expiresAt": "2027-01-01T00:00:00Z",
+    "carpUrl": "http://70.66.243.75:8888",
+    "publicKey": {
+      "type": "secp256k1",
+      "encoding": "compressed-hex",
+      "value":
+        "0384d40f18cd8a49d90a47b7331422bb0572ad0075e579b8e8ca71f83e226ee28c"
+    },
+    "protocols": [
+      {
+        "name": "CARP",
+        "version": "0.1",
+        "minVersion": "0.1",
+        "features": [
+          "challenge-response",
+          "encrypted-jsonrpc",
+          "async"
+        ]
+      }
+    ],
+    "cryptography": {
+      "curve": "secp256k1",
+      "signatureAlgorithm": "ECDSA"
+    },
+    "social": [
+      "https://clawlinked.in/aao/@brydiver",
+      "https://moltbook.com/u/clawface"
+    ]
+  }
+
+  agentdescriptor.proof = proofFor( agentdescriptor )
+
+  admin.respondHttp( 200, agentdescriptor )
+}
+catch( ex ) {
+  admin.respondHttp( 500, ex.toString() )
+}

@@ -32,7 +32,7 @@ const ERC20ABI = [
 
 const AGENT_FEES = {
   "timenow" : null,
-
+  "encrypted-async-timenow" : null,
   "myorders" : null,
   "getorder" : null,
 
@@ -51,13 +51,15 @@ const AGENT_FEES = {
 
 exports.agentFee = function( servicename ) {
 
-  let result = JSON.parse( JSON.stringify(AGENT_FEES[servicename]) )
-  if (result) {
-    result.to = env.VARS.AGENT_ETH_ADDRESS
-    result.network = "Ethereum"
-  }
-  return result
+  let fee = AGENT_FEES[servicename]
 
+  if (fee) {
+    fee = JSON.parse( JSON.stringify(fee) )
+    fee.to = env.VARS.AGENT_ETH_ADDRESS
+    fee.network = "Ethereum"
+  }
+
+  return fee
 }
 
 //  txn: {

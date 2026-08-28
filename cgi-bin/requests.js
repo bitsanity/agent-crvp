@@ -139,13 +139,18 @@ exports.oldestPending = function() {
   let result = null
 
   for (const f of files) {
-    let contents = exports.get( f )
-    if (contents && !contents.completed) {
-      result = contents
-      break
+    let records = exports.all( f )
+    if (!records || records.length == 0) continue
+
+    for (const rec of records) {
+      if (rec && !rec.completed) {
+        result = rec
+        break
+      }
     }
+
+    if (result) break
   }
 
   return result
 }
-

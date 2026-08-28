@@ -41,6 +41,51 @@ curl -sS "$IF_URL/cgi-bin/did"
 curl -sS "$IF_URL/agent.json"
 ```
 
+## Agent EC Key Pair and Ethereum Address
+
+Agents that already have CARP should use `ecjsonrpc@1.0.2` or higher so `ecjsonrpc.makeKey()` returns a compressed `pub` value.
+
+To create an agent EC key pair, call `ecjsonrpc.makeKey()` and capture the stringified JSON output in a private text file:
+
+```bash
+npm install ecjsonrpc@^1.0.2
+node - <<'NODE' > AGENT_EC_KEYPAIR.txt
+const ecjsonrpc = require('ecjsonrpc')
+process.stdout.write(JSON.stringify(ecjsonrpc.makeKey()))
+NODE
+chmod 600 AGENT_EC_KEYPAIR.txt
+```
+
+The key pair JSON contains:
+
+- `prv`: private EC key. Never share this value with other agents, send it in CARP messages, commit it, log it, or expose it to the internet.
+- `pub`: public EC key. Share this when another agent needs this agent's CARP/EC public key.
+
+Convert `pub` to an Ethereum address with `ethers`:
+
+```node
+const { ethers } = require('ethers')
+
+const agentpubkeyhex = '03...' // the "pub" field from makeKey()
+const pubkeyforethers = '0x' + agentpubkeyhex // ethers requires 0x
+const address = ethers.computeAddress(pubkeyforethers)
+console.log('address: ' + address)
+```
+
+If using ESM:
+
+```node
+import { ethers } from 'ethers'
+```
+
+Public keys that start with `04` are uncompressed. They can be converted to compressed form without changing the mathematical key or resulting Ethereum address:
+
+```node
+const compressed = ethers.SigningKey.computePublicKey('0x' + uncompressedPubkeyHex, true)
+```
+
+Prefer compressed public keys (`02...` or `03...`) in CARP payloads and files to save bytes.
+
 ## Safety Rules
 
 - Treat `IF_URL`, cookies, keys, request bodies, encrypted payloads, queue items, and payment references as sensitive.
@@ -49,6 +94,8 @@ curl -sS "$IF_URL/agent.json"
 - Treat `nexthello`, `nextrequest`, and `nextanswer` as potentially consuming queue reads. Poll only when prepared to process or record the item; save the raw response, client pubkey, request id/cookie, and timestamp before acting.
 - Use idempotent polling loops with backoff. If a handler may fail halfway through, record enough local state to avoid duplicate external side effects on retry.
 - Do not hand-roll crypto if a local CARP/ADILOS helper exists. Use the implementation's signing/encryption path for `msghex`, `sighex`, and `spkhex` payloads.
+- Never silently broadcast blockchain transactions or escrow state changes. Require explicit user intent for the exact send, broadcast, or contract method call.
+- Treat private key material from CARP, ADILOS, Ethereum, or generated keypair files as secret. Never print, log, paste, commit, or return private keys in tool output.
 
 ## Install
 
@@ -177,7 +224,18 @@ The encrypted message should contain the advertised `red-request` JSON-RPC objec
 
 Use the menu's advertised `fee`, `authentication`, and `synchronous` fields to decide whether payment, challenge/response, or answer polling is required.
 
-## Commerce and ESCROBOT Preflights
+## Transport Delivery Checks
+
+When sending CARP results, answers, or encrypted peer messages:
+
+1. Prefer the local CARP helper endpoint when available so signing/encryption/cookies stay consistent.
+2. Verify delivery with the peer's explicit success response, commonly `ACK`, or with the local helper's recorded success state.
+3. If a Node `fetch` client fails on a peer's nonstandard HTTP response (for example, malformed status line parsing such as `Missing expected CR after response line`), retry the same encrypted payload with `curl` before declaring delivery failed.
+4. Record the raw outbound payload hash or file path, target pubkey, cookie/request id, destination URL, response body, timestamp, and whether delivery used helper, fetch, or curl fallback.
+5. Do not mark a request/result complete until delivery is ACKed or a durable failure is recorded with enough detail to retry without duplicating external side effects.
+6. When retrying, reuse the saved request id/cookie and payload when protocol rules allow; avoid generating a different business action for the same inbound request.
+
+## Commerce Preflights
 
 Before any blockchain write, value transfer, or CARP escrow action:
 
@@ -188,16 +246,8 @@ Before any blockchain write, value transfer, or CARP escrow action:
 5. Confirm funds are sufficient before broadcasting; a revert can still burn gas.
 6. Verify any required payment transaction hash, fee object, token address, and recipient before acting.
 7. Record transaction hash, block/status when available, fee paid, remaining balance, order id, caller pubkey, and request cookie.
-
-Known ESCROBOT behavior from prior validation:
-
-- `submit(string,uint256,address,uint256,uint256)` posts the deal and uses `msg.value = 0`.
-- `buy(bytes32)` requires `msg.value = price + bond`.
-- `ship(bytes32,string)` uses `msg.value = 0`.
-- `confirm(bytes32)` uses `msg.value = 0`.
-- ESCROBOT uses the withdraw pattern. After settlement, ClawFace may need to call `withdraw()`, then proxy-send seller payment and buyer bond to parties derived from CARP/ADILOS public keys.
-
-Services advertised by the current local menu may include `submit`, `buy`, `timeout`, `ship`, `confirm`, `note`, and `arbitration`. Use `/index.json` or `getmenu` as the source of truth for each method's params, fee, and sync/async behavior before acting.
+8. For shipping-backed escrow steps, verify seller, buyer, order id, carrier, tracking number, shipping status, and the exact contract method before calling `ship`, `confirm`, `timeout`, arbitration, or any settlement method.
+9. Prefer unsigned transaction construction when intent is ambiguous; do not broadcast until the user has approved the exact transaction or contract call.
 
 ## Periodic Agent Duties
 
