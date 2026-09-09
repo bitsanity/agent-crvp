@@ -102,6 +102,20 @@ exports.add = function( pubkeyhex, reqobj ) {
     newFile( pubkeyhex )
   }
 
+  // Idempotency guard (issue #6 retry-correlation): a request is identified
+  // by its JSON-RPC `id`. If a record with the same id already exists for this
+  // client (whether still pending or already completed), DO NOT enqueue a
+  // duplicate. Otherwise a caller that retries after a transport/parser
+  // failure -- reusing the same correlation id, as the retry guidance
+  // requires -- would schedule the same business action twice.
+  let cookiestr = isString(reqobj.id) ? reqobj.id : JSON.stringify( reqobj.id )
+  let existing = null
+  if (cookiestr) existing = exports.get( pubkeyhex, cookiestr )
+
+  if (existing) {
+    return existing
+  }
+
   let data = {
     clientpubkeyhex: pubkeyhex,
     created: Date.now(),
@@ -111,6 +125,7 @@ exports.add = function( pubkeyhex, reqobj ) {
   }
 
   append( pubkeyhex, data )
+  return data
 }
 
 exports.setResult = function( pubkeyhex, cookie, resultobj ) {
