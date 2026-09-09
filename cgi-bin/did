@@ -1,35 +1,31 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
+
+// Nautilus - CABEZON Registrar Agent
+// This endpoint serves Nautilus' Decentralized Identifier (DID), did:key format.
 
 const admin = require( './admin.js' )
+const { VARS } = require( './env.js' )
+
+const DID = "did:key:zQ3shfEmjN42jTLtSJcMaJPEh7bDqPy3vRAwpArWM449trEnz"
 
 try {
   if (process.env.REQUEST_METHOD !== 'GET') throw 'GET only'
 
   let did = {
-    // REPLACE ON INSTALL - the following is clawface's DID as an example
-
     "@context": [ "https://www.w3.org/ns/did/v1.1" ],
-    "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
+    "id": DID,
     "verificationMethod": [
       {
-        "id": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
-      "type": "Multikey",
-      "controller": "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns",
-      "publicKeyMultibase": "zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
+        "id": DID + "#" + DID.replace(/^did:key:/u, ''),
+        "type": "Multikey",
+        "controller": DID,
+        "publicKeyMultibase": DID.replace(/^did:key:/u, '')
       }
     ],
-    "authentication": [
-      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
-    ],
-    "assertionMethod": [
-      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
-    ],
-    "capabilityInvocation": [
-      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
-    ],
-    "capabilityDelegation": [
-      "did:key:zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns#zQ3shoacVLjX5cgdKBjM7S9DKoPqwMjSsD2AveEX3PXKkk1ns"
-    ]
+    "authentication": [ DID + "#" + DID.replace(/^did:key:/u, '') ],
+    "assertionMethod": [ DID + "#" + DID.replace(/^did:key:/u, '') ],
+    "capabilityInvocation": [ DID + "#" + DID.replace(/^did:key:/u, '') ],
+    "capabilityDelegation": [ DID + "#" + DID.replace(/^did:key:/u, '') ]
   }
 
   console.log( "HTTP/1.1 200 OK" )
@@ -43,4 +39,3 @@ try {
 catch( ex ) {
   admin.respondHttp( 500, ex.toString() )
 }
-

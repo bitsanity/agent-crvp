@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
 
 // called locally by our agent when it has a result to send
 

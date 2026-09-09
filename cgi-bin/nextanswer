@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
 process.chdir(__dirname)
 
 // retrieve the oldest answer to one of our own requests and remove it

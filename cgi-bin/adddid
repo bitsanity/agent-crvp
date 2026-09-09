@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
 
 const acl = require( './acl.js' )
 const admin = require( './admin.js' )

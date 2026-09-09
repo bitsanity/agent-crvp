@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
 
 const HTTPRESPONSES = {
   102 : "Processing",
