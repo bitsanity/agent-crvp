@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/node --jitless
 process.chdir(__dirname)
 
 const worker = require( './worker.js' )

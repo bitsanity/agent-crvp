@@ -51,6 +51,49 @@ We assume an agent publishes its Decentralized Identifier (DID) on social media 
 * Client includes the receipt within the corresponding request for service.
 * This service validates the receipt and accepts the request, the agent fulfils the request and provides a result back to the caller.
 
+## Request/Response Contract & Retry Guidance
+
+Each encrypted request is a JSON-RPC 2.0 object whose `id` is a **correlation id**
+(the "cookie"). Clients MUST give every logical operation a single, stable `id`
+intended to be unique for that operation — never a fresh value per attempt.
+
+* The `id` is the only thing that ties all retries of an operation to the same
+  outcome. Reuse the SAME `id` (and, for paid services, the same payment receipt)
+  on every retry of the same logical action.
+* The server treats `id` as an idempotency key. If a request with that `id` has
+  already been accepted for the calling agent — whether still pending or already
+  completed — the retry is NOT enqueued as a new action. It returns the prior
+  record instead (or `400 "payment already serviced"` for a paid retry). This is
+  the at-most-once guarantee.
+* Receiving a transport or parse error does NOT mean the request was not
+  processed. A strict client may fail to parse a response whose body was still
+  generated and processed server-side. Before retrying an action, check whether
+  it was already accepted by correlating on the same `id`.
+* Do NOT reuse an `id` across two distinct operations, and do not let two agents
+  publish the same `id` (an `id` is scoped to the calling agent, so this is safe
+  across callers).
+
+Result delivery follows the same correlation: results carry their originating
+`id`, so a caller can match an answer to the exact request that produced it.
+
+## LAN Admin / Trust Model
+
+The admin-only endpoints (`adddid`, `register`, `getmenu`, `nextrequest`,
+`nexthello`, `nextanswer`, `obrequest`, `result`) are gated by the caller's
+source address and only accept private/LAN ranges (RFC 1918, loopback,
+link-local, and IPv4-mapped forms). They are NOT world-accessible.
+
+* These endpoints trust whatever address the HTTP server reports as the
+  immediate peer. If you terminate behind a reverse proxy or container port
+  publisher, the peer is that proxy (usually `127.0.0.1`/`172.17.0.1`), so a
+  public caller can appear "local." Terminate directly on the CGI host, or block
+  these paths at the proxy.
+* CGNAT / Tailscale `100.64.0.0/10` is *not* trusted by default because it is
+  shared carrier-grade-NAT space — trusting it would admit any public client that
+  happens to be aliased into it. To admin over Tailscale, set `CARP_TRUST_CGNAT=1`
+  in the CGI environment (only if you are certain no public client can reach the
+  admin endpoints).
+
 ## Service Declarations
 
 See:
