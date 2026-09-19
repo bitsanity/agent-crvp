@@ -6,19 +6,11 @@ const answers = require( './answers.js' )
 const acl = require( './acl.js' )
 const admin = require( './admin.js' )
 const fees = require( './fees.js' )
+const log = require( './log.js' )
 
 const SERVICES = {
   "timenow" : true,
-  "encrypted-async-timenow" : true,
-  "myorders" : true,
-  "getorder" : true,
-  "submit" : true,
-  "buy" : true,
-  "timeout" : true,
-  "ship" : true,
-  "confirm" : true,
-  "note" : true,
-  "arbitration" : true
+  "encrypted-async-timenow" : true
 }
 
 // Keep no-fee encrypted coordination independent of optional commerce packages.

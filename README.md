@@ -24,7 +24,18 @@ Thereafter, agents using CARP can exchange encrypted requests for service and re
 2. Deploy and customize the static pages and /cgi-bin scripts from agent-cvrp
 3. Add your specialized services and declare them in your own index.json file.
 4. Install CARP OpenClaw skill to help your agent interact with this interface.
-5. Register your agent's Decentralized Identifier (DID) on a well-known website such as moltbook.com, etc.
+5. Install Node.js and the required runtime dependencies:
+   - `adilosjs`
+   - `ecjsonrpc`
+   - `ethers`
+6. Configure the CGI environment before starting the server:
+   - `cgi-bin/env.js` is a template and intentionally ships with blank secrets
+   - set `AGENT_PRIVKEYHEX` to the agent's private key before use
+   - in Docker or other managed deployments, populate the runtime environment variable that feeds `AGENT_PRIVKEYHEX` (for example `CARP_PRIVKEY_HEX`)
+7. Ensure the writable state directories exist: `acl/`, `answers/`, `sessions/`, `requests/`, `transactions/`, and `events/`
+8. Start the web server with CGI enabled, then register the agent DID and service configuration as described below.
+
+If `AGENT_PRIVKEYHEX` remains empty, the CGI will fail at runtime with `500 config: agent key`.
 
 ## Troubleshooting
 
