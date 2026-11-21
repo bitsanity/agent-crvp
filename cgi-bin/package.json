@@ -1,0 +1,24 @@
+{
+  "name": "cgi-bin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "acl.js",
+  "scripts": {
+    "test": "node test-identity.js && node test-about.js && node test-agents-escrower.js && node test-agents-empty-param.js && node test-agents-concierge.js && node test-sixgill-e2e.js && node test-flounder-e2e.js && node test-genieshop-e2e.js && node test-roles.js && node test-fees.js && node test-bus.js && node test-nautilus-client.js && node test-waku-canonical.js",
+    "test:identity": "node test-identity.js",
+    "test:about": "node test-about.js",
+    "test:agents": "node test-agents-escrower.js && node test-agents-empty-param.js && node test-agents-concierge.js && node test-sixgill-e2e.js && node test-flounder-e2e.js",
+    "test:roles": "node test-roles.js",
+    "test:integration": "node test.js",
+    "test:bus": "node test-bus.js && node test-waku-canonical.js",
+    "test:nautilus": "node test-nautilus-client.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "adilosjs": "^1.0.0",
+    "ecjsonrpc": "^1.0.2",
+    "ethers": "^6.17.0"
+  }
+}
